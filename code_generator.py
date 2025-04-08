@@ -132,6 +132,41 @@ class CodeGeneratorAgent:
                 required.append(package_name)
         return sorted(list(set(required))) # 중복 제거 및 정렬
 
+    def _is_refusal_message(self, text: str) -> bool:
+        """Checks if the text likely contains a refusal message from the LLM."""
+        text_lower = text.lower()
+        refusal_keywords_ko = ["죄송합니다", "할 수 없습니다", "안전하지 않은", "악의적인", "해로운", "대신"]
+        refusal_keywords_en = ["sorry", "cannot generate", "unable to", "unsafe", "malicious", "harmful", "destructive", "instead", "as an ai", "i cannot"]
+
+        # Check for keywords
+        if any(keyword in text_lower for keyword in refusal_keywords_ko + refusal_keywords_en):
+            return True
+
+        # Check for phrases indicating refusal or ethical concerns
+        refusal_phrases = [
+            "i cannot fulfill this request",
+            "i cannot create code that",
+            "my purpose is to help",
+            "potentially harmful",
+            "violates safety policies",
+            "요청을 수행할 수 없습니다",
+            "안전 정책에 위배",
+            "해로운 코드는 생성할 수 없습니다",
+        ]
+        if any(phrase in text_lower for phrase in refusal_phrases):
+             return True
+
+        # Check if the response doesn't look like typical code (e.g., lacks common code symbols)
+        # This is a heuristic and might need refinement
+        code_symbols = ['{', '}', '(', ')', '=', ';', ':', 'import', 'def', 'class', 'function', 'var', 'let', 'const']
+        if len(text) < 500 and not any(symbol in text_lower for symbol in code_symbols): # Short response without code symbols might be refusal
+             # Exception: Very short, simple code might not have many symbols
+             if 'print(' not in text_lower and 'console.log(' not in text_lower:
+                 logging.warning(f"Response might be a refusal (short, lacks common code symbols): {text[:100]}...")
+                 return True
+
+        return False
+
     def run(self, \
             task: str, \
             search_context: str | None = None, \
@@ -233,6 +268,18 @@ Only generate educational, useful, and safe code that demonstrates the requested
                     temperature=0.4, # 수정 작업이므로 약간 더 결정론적으로
                 )
                 raw_code_content = response.choices[0].message.content.strip()
+
+                # ---> START Refusal Check <---
+                if self._is_refusal_message(raw_code_content):
+                    logging.warning(f"LLM refused to generate/correct code. Response: {raw_code_content}")
+                    return {
+                        "task": task,
+                        "result_type": "error",
+                        "result": f"LLM이 코드 생성/수정을 거부했습니다:\n---\n{raw_code_content}\n---",
+                        "status": "refused"
+                    }
+                # ---> END Refusal Check <---
+
                 code_content = self._clean_llm_code_output(raw_code_content, detected_language)
                 
                 # 위험한 코드 패턴 검사
