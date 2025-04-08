@@ -167,6 +167,41 @@ class CodeGeneratorAgent:
 
         return False
 
+    def _is_potentially_harmful(self, code: str) -> bool:
+        """Performs a basic check for potentially harmful patterns in the code."""
+        code_lower = code.lower()
+        harmful_patterns = [
+            r'rm\s+-rf',       # File deletion
+            r'deltree',        # File deletion (Windows)
+            r'format\s+[a-z]:', # Formatting drives (Windows)
+            r':(){:|:&};:',    # Fork bomb (Bash)
+            r'os\.fork\(\)',    # Forking (check context if used repeatedly in loops)
+            # Add more specific patterns as needed, e.g., accessing common sensitive file paths
+            r' shutil\.rmtree', # Recursive directory removal
+            # Be careful not to block legitimate uses, e.g., os.remove for temp files
+        ]
+        
+        # Check for os.system or subprocess calls with potentially dangerous commands
+        suspicious_cmd_pattern = r'(?:os\.system|subprocess\.(?:run|call|check_call|check_output|Popen))\s*\(\s*[\'"](.*?)[\'"]'
+        suspicious_matches = re.findall(suspicious_cmd_pattern, code, re.IGNORECASE)
+        
+        suspicious_commands = ['rm', 'del', 'format', 'mkfs', 'dd ', 'shutdown', 'reboot', 'wget ', 'curl '] # Add more
+
+        for match in suspicious_matches:
+            command_part = match.split(' ')[0] # Get the command itself
+            if any(cmd in command_part for cmd in suspicious_commands):
+                 # Check for very common safe uses, like removing a specific temp file
+                 if 'rm ' in match and '/tmp/' in match and ' -rf ' not in match :
+                     continue # Allow removing specific files in /tmp
+                 logging.warning(f"Suspicious command found via os.system/subprocess: {match}")
+                 return True
+
+        for pattern in harmful_patterns:
+            if re.search(pattern, code_lower):
+                logging.warning(f"Potentially harmful pattern matched: {pattern}")
+                return True
+        return False
+
     def run(self, \
             task: str, \
             search_context: str | None = None, \
@@ -258,102 +293,144 @@ Only generate educational, useful, and safe code that demonstrates the requested
                 if is_gui_request and is_particle_request:
                     user_prompt += "\n\nCreate a self-contained program that shows animated particles or fireworks with a proper GUI interface. The program should:\n1. Open a window with controls (buttons, sliders, etc.)\n2. Display animated particles or fireworks effects\n3. Allow users to interact with or control the particle effects\n4. Include proper animation loops and timing\n5. Handle window events correctly"
 
+            # --- LLM 호출 ---
+            messages = []
+            messages.append({"role": "system", "content": system_prompt})
+            
+            user_content_parts = [f"Task: {task}"]
+            if is_correction_request:
+                user_content_parts.append(f"\\n\\nPrevious Code:\\n{previous_code}")
+                user_content_parts.append(f"\\n\\nError Message:\\n{error_message}")
+            
+            messages.append({"role": "user", "content": "\\n".join(user_content_parts)})
+
+            generated_code = None
+            required_packages = []
+            status = "failed" # Default status
+            llm_response_text = "" # Store full response
+
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo", 
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    temperature=0.4, # 수정 작업이므로 약간 더 결정론적으로
+                    model="gpt-4o-mini", # Or your preferred model
+                    messages=messages,
+                    temperature=0.1, # Low temp for deterministic code
+                    max_tokens=1500, # Adjust as needed
+                    n=1,
+                    stop=None,
                 )
-                raw_code_content = response.choices[0].message.content.strip()
+                llm_response_text = response.choices[0].message.content.strip()
+                
+                # --- Refined Code Extraction ---
+                # 1. Search for the first code block using regex
+                code_block_pattern = r"```(?:python|\\w*)?\\s*\\n(.*?)\\n```"
+                match = re.search(code_block_pattern, llm_response_text, re.DOTALL | re.IGNORECASE)
 
-                # ---> START Refusal Check <---
-                if self._is_refusal_message(raw_code_content):
-                    logging.warning(f"LLM refused to generate/correct code. Response: {raw_code_content}")
-                    return {
+                if match:
+                    # 2. Extract code if block found
+                    extracted_code = match.group(1).strip()
+                    logging.info(f"Code block extracted successfully. Length: {len(extracted_code)}")
+                    
+                    # 3. Basic safety check on extracted code (can be enhanced)
+                    if self._is_potentially_harmful(extracted_code):
+                         logging.warning(f"Potentially harmful code pattern detected in extracted block.")
+                         result_message = f"LLM generated potentially harmful code patterns."
+                         status = "failed_safety"
+                    else:
+                         generated_code = extracted_code
+                         status = "success"
+                         logging.info(f"Code generation successful ({detected_language}).")
+                else:
+                    # 4. If no code block found, check if it's a refusal
+                    logging.warning("No code block found in LLM response.")
+                    if self._is_refusal_message(llm_response_text):
+                        logging.warning(f"LLM refused to generate/correct code. Response: {llm_response_text}")
+                        result_message = f"LLM이 코드 생성/수정을 거부했습니다:\\n---\\n{llm_response_text}\\n---"
+                        status = "refused"
+                    else:
+                        # Not a refusal, but no code block - maybe just text?
+                        logging.warning("LLM response did not contain a code block and wasn't detected as refusal.")
+                        result_message = f"LLM이 코드를 생성하지 못했습니다. 응답 내용:\\n---\\n{llm_response_text}\\n---"
+                        status = "failed_no_code"
+                
+                # --- Package Check (only if code generation was successful) ---
+                if status == "success" and detected_language == 'python':
+                    imports = self._find_python_imports(generated_code)
+                    required_packages = self._check_required_packages(imports)
+                    if required_packages:
+                        logging.info(f"Detected required packages: {required_packages}")
+
+            except Exception as e:
+                logging.error(f"LLM API 호출 중 오류 발생: {e}", exc_info=True)
+                result_message = f"LLM API 호출 중 오류가 발생했습니다: {e}"
+                status = "failed_api"
+
+            # --- 결과 처리 및 파일 저장 ---
+            if status == "success":
+                # Save the generated code
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                extension = self.lang_to_ext.get(detected_language, '.txt')
+                filename = f"{detected_language}_code_{timestamp}{extension}"
+                saved_file_path = os.path.join(self.output_dir, filename)
+                
+                try:
+                    with open(saved_file_path, 'w', encoding='utf-8') as f:
+                        f.write(generated_code)
+                    logging.info(f"Generated code saved to: {saved_file_path}")
+                    save_msg = f"코드가 성공적으로 생성되어 '{saved_file_path}'에 저장되었습니다."
+                    
+                    final_result = {
+                        "task": task,
+                        "result_type": "code_generation",
+                        "result": f"Code generation successful for language: {detected_language}",
+                        "generated_code": generated_code,
+                        "saved_file_path": saved_file_path,
+                        "saved_path_message": save_msg,
+                        "language": detected_language,
+                        "execute_request": is_execution_request,
+                        "required_packages": required_packages,
+                        "status": status
+                    }
+                    
+                except IOError as e:
+                    logging.error(f"파일 저장 실패: {saved_file_path}, 오류: {e}")
+                    final_result = {
                         "task": task,
                         "result_type": "error",
-                        "result": f"LLM이 코드 생성/수정을 거부했습니다:\n---\n{raw_code_content}\n---",
-                        "status": "refused"
+                        "result": f"생성된 코드를 파일에 저장하는 중 오류 발생: {e}",
+                        "status": "failed_save"
                     }
-                # ---> END Refusal Check <---
-
-                code_content = self._clean_llm_code_output(raw_code_content, detected_language)
-                
-                # 위험한 코드 패턴 검사
-                if detected_language == 'python':
-                    dangerous_patterns = [
-                        r'rm\s+-rf', r'rmdir', r'shutil\.rmtree', 
-                        r'os\.remove', r'os\.unlink',
-                        r'os\.system\(.*rm', r'subprocess\..*rm',
-                        r'format\(.*C:', r'format\(.*/', 
-                        r'__import__\([\'"]os[\'"]\)', r'exec\(', r'eval\(',
-                        r'open\(.*/etc/passwd', r'open\(.*/etc/shadow',
-                        # 'socket\.' # 소켓은 일반적인 네트워킹에 사용되므로 제외 고려
-                    ]
-                    
-                    if any(re.search(pattern, code_content, re.IGNORECASE) for pattern in dangerous_patterns):
-                        logging.warning("위험한 코드 패턴 감지됨. 코드 생성/수정 거부.")
-                        
-                        return {
-                            "task": task,
-                            "result_type": "error",
-                            "result": "보안상의 이유로 이 코드 요청을 처리할 수 없습니다. 위험하거나 파괴적인 동작이 감지되었습니다. 다른 요청을 시도해 주세요.",
-                            "status": "failed"
-                        }
-                
-                required_packages = []
-                if detected_language == 'python':
-                    imported_modules = self._find_python_imports(code_content)
-                    required_packages = self._check_required_packages(imported_modules)
-                    if required_packages:
-                         logging.info(f"감지된 필요 패키지 (생성/수정 후): {required_packages}")
-
-                if not code_content:
-                    logging.warning(f"LLM이 빈 {detected_language} 코드를 반환했거나 파싱 실패.")
-                    code_content = f"# LLM이 {detected_language} 코드를 생성/수정하지 못했거나 응답 파싱에 실패했습니다." 
-                
-                file_extension = self.lang_to_ext.get(detected_language, '.txt')
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                filename = f"generated_code_{timestamp}{file_extension}"
-                # 수정 요청인 경우, 동일한 파일명을 유지하도록 할 수도 있으나, 충돌 방지를 위해 새 파일 생성
-                # (main.py에서 덮어쓸지 결정)
-                file_path = os.path.join(self.output_dir, filename) 
-                
-                saved_message = ""
-                try:
-                    with open(file_path, 'w', encoding='utf-8') as f:
-                        f.write(code_content)
-                    saved_message = f"코드(생성/수정)가 다음 경로에 저장되었습니다: {file_path}"
-                except Exception as e:
-                    saved_message = f"코드 저장 중 오류 발생: {e}"
-                    logging.error(saved_message)
-                    file_path = None # 저장 실패 시 경로 없음
-                    
-                result = {
-                    "task": task,
-                    "result_type": "code_generation", 
-                    "is_correction": is_correction_request, # 수정 여부 플래그 추가
-                    "language": detected_language,
-                    "generated_code": code_content,
-                    "saved_path_message": saved_message,
-                    "saved_file_path": file_path, # 실제 파일 경로 추가
-                    "execute_request": is_execution_request, # 실행 요청 여부 추가
-                    "required_packages": required_packages, # 필요 패키지 정보 추가
-                    "status": "success"
-                }
-                return result
-                
-            except Exception as e:
-                logging.error(f"OpenAI API 호출 중 오류 발생 ({detected_language}): {e}")
-                return {
+            else: # Handle various failure cases
+                final_result = {
                     "task": task,
                     "result_type": "error",
-                    "result": f"LLM {detected_language} 코드 생성/수정 중 오류 발생: {e}",
-                    "status": "failed"
+                    "result": result_message, # Use the message set in the try/except block
+                    "full_llm_response": llm_response_text, # Include full response for debugging
+                    "status": status
                 }
+
+            if print_results:
+                print(f"--- Code Generation Result ---\nTask: {task}\nStatus: {final_result.get('status')}\nResult: {final_result.get('result')}")
+                if final_result.get('generated_code'):
+                    print(f"Language: {final_result.get('language')}")
+                    print(f"Saved to: {final_result.get('saved_file_path')}")
+                    if final_result.get('required_packages'):
+                        print(f"Required Packages: {final_result.get('required_packages')}")
+                    print(f"Code:\\n{final_result.get('generated_code')[:500]}...") # Print first 500 chars
+                elif final_result.get('full_llm_response'):
+                     print(f"LLM Response:\\n{final_result.get('full_llm_response')}")
+                print("-" * 30)
+                
+            return final_result
+            
+        else: # 작업 유형이 코드 생성/수정이 아닌 경우
+             # This part might not be strictly necessary if AgentAI routes tasks correctly
+             logging.info(f"Task '{task}' is not a code generation or correction request.")
+             return {
+                "task": task,
+                "result_type": "info",
+                "result": "작업 유형이 코드 생성 또는 수정이 아닙니다.",
+                "status": "not_applicable"
+            }
 
         # --- 코드 생성이 아니거나 언어를 특정할 수 없는 경우 ---
         result = {

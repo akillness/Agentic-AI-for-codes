@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 import os
+import re
 
 import logging
 from datetime import datetime
@@ -119,11 +120,45 @@ class AgentAI:
         """검색 단계 실행 - WebHandler 사용"""
         query = parameters.get("query", "")
         if not query:
+            logging.warning("Search step executed without a query.")
             return {"success": False, "result": "검색어가 제공되지 않았습니다."}
-        
-        search_result = self.web_handler.perform_web_search_and_summarize(query) # Delegate to WebHandler
-        context["search_result"] = search_result
-        return search_result
+
+        logging.info(f"Performing web search for: '{query}'")
+        try:
+            # Determine language hint from original task
+            original_task = context.get("original_task", "")
+            # Basic check for Hangul characters
+            is_korean = bool(re.search("[가-힣]", original_task))
+            language_hint = 'ko' if is_korean else 'en'
+            logging.info(f"Using language hint: {language_hint}")
+
+            # Delegate to WebHandler, passing the hint
+            search_result_data = self.web_handler.perform_web_search_and_summarize(
+                query,
+                language_hint=language_hint
+            )
+
+            # Ensure the result from WebHandler is in the expected format
+            if isinstance(search_result_data, dict) and "success" in search_result_data and "result" in search_result_data:
+                context["search_result"] = search_result_data # Store the full result for context
+                logging.info(f"Search successful: {search_result_data.get('success')}")
+                # Return the standardized format
+                return {
+                    "success": search_result_data["success"],
+                    "result": str(search_result_data["result"]) # Ensure result is string
+                 }
+            else:
+                 # Handle unexpected format from WebHandler
+                 logging.warning(f"WebHandler returned unexpected format: {search_result_data}")
+                 # Assume success but wrap the result
+                 context["search_result"] = {"success": True, "result": str(search_result_data)}
+                 return {"success": True, "result": f"검색 결과(처리되지 않음):\\n{str(search_result_data)}"}
+
+        except Exception as e:
+            logging.error(f"Error during web search execution: {e}", exc_info=True)
+            # Store error in context as well? Maybe not necessary.
+            # context["search_result"] = {"success": False, "result": str(e)}
+            return {"success": False, "result": f"웹 검색 중 오류 발생: {str(e)}"}
 
     def _execute_code_generation_step(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """코드 생성 단계 실행 - CodeGeneratorAgent 사용"""
@@ -131,7 +166,7 @@ class AgentAI:
         use_search_context = parameters.get("use_search_context", False)
         
         search_context = None
-        if use_search_context and "search_result" in context and context["search_result"].get("success", False):
+        if use_search_context and "search_result" in context:
             search_context = context["search_result"].get("result")
         
         # CodeGeneratorAgent 호출

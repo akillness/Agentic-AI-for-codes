@@ -98,8 +98,8 @@ class WebHandler:
 
         return search_results_text
 
-    def _summarize_text(self, query: str, text_content: List[str]) -> str:
-        """Summarizes text content using an LLM to answer the original query."""
+    def _summarize_text(self, query: str, text_content: List[str], language_hint: str = 'en') -> str:
+        """Summarizes text content using an LLM to answer the original query in the specified language."""
         if not text_content:
             return "관련 웹 정보를 찾을 수 없습니다."
 
@@ -108,13 +108,22 @@ class WebHandler:
         # Simple truncation based on character count as a proxy for tokens
         # Adjust multiplier if needed, e.g., 4 chars/token average
         context_for_llm = context[:self.context_token_limit * 4]
-        logging.info(f"Attempting text summarization (Context length: {len(context_for_llm)} chars)...")
+        logging.info(f"Attempting text summarization (Context length: {len(context_for_llm)} chars, Language: {language_hint})...")
+
+        # Determine language for the prompt
+        language_name = "Korean" if language_hint == 'ko' else "English"
+        system_prompt = (
+            f"You are a helpful assistant. Summarize the following text context to directly answer the user's original question. "
+            f"Provide a concise and relevant answer based *only* on the provided text. "
+            f"If the text doesn't answer the question, state that. "
+            f"Please respond in {language_name}."
+        )
 
         try:
             response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo", # Consider gpt-4o-mini if available and affordable
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant. Summarize the following text context to directly answer the user's original question. Provide a concise and relevant answer based *only* on the provided text. If the text doesn't answer the question, state that."},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"Original Question: {query}\n\nContext:\n{context_for_llm}"}
                 ],
                 temperature=0.2, # Lower temperature for factual summary
@@ -127,7 +136,8 @@ class WebHandler:
             if not summary:
                 logging.warning("LLM summary result is empty.")
                 # Fallback: provide first part of the first result
-                return f"검색 결과를 요약하는 데 실패했습니다. 첫 번째 결과 일부: \n{text_content[0][:300]}..."
+                fallback_message = "검색 결과를 요약하는 데 실패했습니다." if language_hint == 'ko' else "Failed to summarize search results."
+                return f"{fallback_message} 첫 번째 결과 일부: \n{text_content[0][:300]}..."
 
             logging.info("Text summarization successful.")
             return summary
@@ -135,22 +145,24 @@ class WebHandler:
         except Exception as e:
             logging.error(f"LLM summarization API call failed: {e}", exc_info=True)
             # Fallback: provide first part of the first result
-            return f"텍스트 요약 중 오류가 발생했습니다. 첫 번째 결과 일부: \n{text_content[0][:300]}..."
+            fallback_message = "텍스트 요약 중 오류가 발생했습니다." if language_hint == 'ko' else "An error occurred during text summarization."
+            return f"{fallback_message} 첫 번째 결과 일부: \n{text_content[0][:300]}..."
 
-    def perform_web_search_and_summarize(self, query: str) -> Dict[str, Any]:
-        """Performs web search and summarizes the results."""
+    def perform_web_search_and_summarize(self, query: str, language_hint: str = 'en') -> Dict[str, Any]:
+        """Performs web search and summarizes the results in the specified language."""
         # 1. Fetch web content
         search_results = self._fetch_web_content(query)
 
         if not search_results:
-            return {
+             fallback_message = "웹 검색 중 오류가 발생했거나 관련 정보를 찾을 수 없습니다." if language_hint == 'ko' else "An error occurred during web search or no relevant information was found."
+             return {
                 "success": False,
-                "result": "웹 검색 중 오류가 발생했거나 관련 정보를 찾을 수 없습니다.",
+                "result": fallback_message,
                 "raw_content": []
             }
 
-        # 2. Summarize the fetched content
-        summary = self._summarize_text(query, search_results)
+        # 2. Summarize the fetched content, passing the hint
+        summary = self._summarize_text(query, search_results, language_hint=language_hint)
 
         return {
             "success": True,
