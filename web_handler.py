@@ -6,7 +6,8 @@ from model_manager import ModelManager
 from googlesearch import search # Import specific function
 
 class WebHandler:
-    def __init__(self, model_manager: ModelManager, max_search_results: int = 2, context_token_limit: int = 4000, summary_max_tokens: int = 200):
+    def __init__(self, model_manager: ModelManager, max_search_results: int = 2, context_token_limit: int = 4000, 
+                 summary_max_tokens: int = 200, recency_filter: str = 'month'):
         """Initializes the WebHandler.
 
         Args:
@@ -14,12 +15,26 @@ class WebHandler:
             max_search_results (int): Maximum number of search result pages to process.
             context_token_limit (int): Token limit for context sent to LLM for summarization.
             summary_max_tokens (int): Max tokens for the generated summary.
+            recency_filter (str): Filter for search results by recency. Options:
+                                 'day' - past day, 'week' - past week, 'month' - past month, 
+                                 'year' - past year, None - no filter
         """
         self.model_manager = model_manager
         self.max_search_results = max_search_results
         self.context_token_limit = context_token_limit
         self.summary_max_tokens = summary_max_tokens
-        logging.info("WebHandler initialized.")
+        
+        # Set up recency filter mapping
+        self._recency_map = {
+            'day': 'qdr:d',
+            'week': 'qdr:w',
+            'month': 'qdr:m',
+            'year': 'qdr:y',
+            None: None
+        }
+        self.recency_filter = self._recency_map.get(recency_filter, 'qdr:m')  # Default to month if invalid
+        
+        logging.info(f"WebHandler initialized with recency filter: {recency_filter if recency_filter else 'none'}")
 
     def _fetch_web_content(self, query: str) -> List[str]:
         """Performs internet search and returns cleaned text content from results."""
@@ -30,14 +45,21 @@ class WebHandler:
         try:
             # Fetch search results (limit number fetched initially)
             num_to_fetch = self.max_search_results + 2 # Fetch slightly more to account for potential failures
-            logging.info(f"Google search for '{query}' (fetching up to {num_to_fetch})...")
             
-            # Simplified googlesearch call - rely on the library's default behavior for fetching results
-            # The library often handles rate limiting internally to some extent.
-            # We will limit the processed URLs later.
+            # Log with recency information
+            recency_info = ""
+            if self.recency_filter:
+                for period, tbs in self._recency_map.items():
+                    if tbs == self.recency_filter and period:
+                        recency_info = f" (from past {period})"
+                        break
+            
+            logging.info(f"Google search for '{query}'{recency_info} (fetching up to {num_to_fetch})...")
+            
+            # Simplified googlesearch call with recency filter
             try:
-                # Use a simple call, expecting an iterator/generator
-                search_generator = search(query, pause=2.0) 
+                # Use the recency filter if set
+                search_generator = search(query, pause=2.0, tbs=self.recency_filter) 
                 # Convert generator to list cautiously, limiting the initial fetch
                 fetched_urls = []
                 # Try fetching a bit more than needed, handle potential StopIteration

@@ -58,7 +58,7 @@ class AgentAI:
         
         # 에이전트 및 도구 초기화 시 ModelManager 전달
         self.code_generator = CodeGeneratorAgent(model_manager=self.model_manager)
-        self.web_handler = WebHandler(model_manager=self.model_manager)
+        self.web_handler = WebHandler(model_manager=self.model_manager, recency_filter='month')  # 최근 한 달 내 정보 우선 검색
         self.task_planner = TaskPlanner(model_manager=self.model_manager)
         self.result_formatter = ResultFormatter()
         
@@ -133,24 +133,49 @@ class AgentAI:
 
             # Ensure the result from WebHandler is in the expected format
             if isinstance(search_result_data, dict) and "success" in search_result_data and "result" in search_result_data:
-                context["search_result"] = search_result_data # Store the full result for context
-                logging.info(f"Search successful: {search_result_data.get('success')}")
-                # Return the standardized format
-                return {
-                    "success": search_result_data["success"],
-                    "result": str(search_result_data["result"]) # Ensure result is string
-                 }
+                context["search_result"] = search_result_data # Store the full result
+
+                if not search_result_data["success"]:
+                    logging.warning(f"Web search failed according to WebHandler: {search_result_data.get('result')}")
+                    return {
+                        "success": False,
+                        "result": f"웹 검색 실패: {str(search_result_data['result'])}"
+                    }
+
+                # Check the content of the result even if success is True
+                result_content = str(search_result_data["result"]).strip()
+                no_useful_info_indicators = [
+                    "No relevant information found",
+                    "검색 결과를 찾을 수 없습니다",
+                    "유용한 정보를 찾지 못했습니다",
+                    "관련 정보를 찾을 수 없습니다", # Add more potential indicators if needed
+                    # Check for trivially short results? Maybe not reliable.
+                ]
+                is_empty_or_no_info = not result_content or any(indicator in result_content for indicator in no_useful_info_indicators)
+
+                if is_empty_or_no_info:
+                     logging.warning(f"Web search successful but returned no useful information. Query: '{query}'. Result: '{result_content[:100]}...'")
+                     # Consider this step failed as no useful info was obtained for the agent's task
+                     return {
+                        "success": False, # Step considered failed
+                        "result": "웹 검색 결과에서 유용한 정보를 찾지 못했습니다."
+                     }
+                else:
+                     # Success and has useful content
+                     logging.info(f"Search successful: True, Content found.")
+                     return {
+                        "success": True,
+                        "result": result_content # Return only the cleaned content string
+                     }
             else:
                  # Handle unexpected format from WebHandler
-                 logging.warning(f"WebHandler returned unexpected format: {search_result_data}")
-                 # Assume success but wrap the result
-                 context["search_result"] = {"success": True, "result": str(search_result_data)}
-                 return {"success": True, "result": f"검색 결과(처리되지 않음):\\n{str(search_result_data)}"}
+                 logging.error(f"WebHandler returned unexpected format: {search_result_data}")
+                 context["search_result"] = {"success": False, "result": f"Unexpected format: {str(search_result_data)}"} # Store error info
+                 return {"success": False, "result": f"웹 검색 처리 중 예기치 않은 결과 형식 수신"}
 
         except Exception as e:
             logging.error(f"Error during web search execution: {e}", exc_info=True)
-            # Store error in context as well? Maybe not necessary.
-            # context["search_result"] = {"success": False, "result": str(e)}
+            context["search_result"] = {"success": False, "result": str(e)} # Store error in context
             return {"success": False, "result": f"웹 검색 중 오류 발생: {str(e)}"}
 
     def _execute_code_generation_step(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
@@ -188,7 +213,7 @@ class AgentAI:
             # Add notification if context was requested BUT either not available/empty OR the search step failed
             if use_search_context and (not search_context or not str(search_context).strip() or not search_step_success):
                 reason = "없거나 비어 있음" if not search_context or not str(search_context).strip() else "검색 단계 실패"
-                notification = f"\\n\\n[알림] 요청된 웹 검색 컨텍스트({reason}) 없이 코드를 생성했습니다."
+                notification = f"\n\n[알림] 요청된 웹 검색 컨텍스트({reason}) 없이 코드를 생성했습니다."
                 logging.warning(f"Code generated without requested web search context (Reason: {reason}).")
 
 

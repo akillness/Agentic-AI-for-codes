@@ -11,7 +11,7 @@ class ModelManager:
         "planning": "gpt-4o-mini",
         "code_gen": "gpt-4o-mini",
         "correction": "gpt-4o-mini",
-        "summarization": "gpt-3.5-turbo", # Use a faster/cheaper model for summarization
+        "summarization": "gpt-4o-mini", # Use a faster/cheaper model for summarization
         "default": "gpt-4o-mini"
     }
 
