@@ -1,13 +1,11 @@
-from typing import List, Dict, Any, Callable, Tuple, Union
+from typing import List, Dict, Any
 import os
-import re
-import json
+
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
-import requests
-from bs4 import BeautifulSoup
+
 import sys
 import shutil
 
