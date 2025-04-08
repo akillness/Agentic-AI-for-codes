@@ -32,27 +32,41 @@ class WebHandler:
             num_to_fetch = self.max_search_results + 2 # Fetch slightly more to account for potential failures
             logging.info(f"Google search for '{query}' (fetching up to {num_to_fetch})...")
             
-            # Try different parameter combinations since googlesearch API might vary
+            # Simplified googlesearch call - rely on the library's default behavior for fetching results
+            # The library often handles rate limiting internally to some extent.
+            # We will limit the processed URLs later.
             try:
-                # First try with stop parameter (number of results to fetch)
-                fetched_urls = list(search(query, stop=num_to_fetch, pause=2.0))
-            except TypeError:
+                # Use a simple call, expecting an iterator/generator
+                search_generator = search(query, pause=2.0) 
+                # Convert generator to list cautiously, limiting the initial fetch
+                fetched_urls = []
+                # Try fetching a bit more than needed, handle potential StopIteration
                 try:
-                    # Then try with num parameter
-                    fetched_urls = list(search(query, num=num_to_fetch, pause=2.0))
-                except TypeError:
-                    # Fallback to basic search with minimal parameters
-                    fetched_urls = list(search(query, pause=2.0))[:num_to_fetch]
+                     for i, url in enumerate(search_generator):
+                          fetched_urls.append(url)
+                          if i >= num_to_fetch - 1: 
+                               break
+                except Exception as search_iter_err:
+                     # Log error during iteration, but proceed if we got some URLs
+                     logging.warning(f"Error during googlesearch iteration: {search_iter_err}")
+
+            except Exception as google_search_err:
+                 # Catch errors during the initial search() call itself
+                 logging.error(f"Error calling googlesearch library for '{query}': {google_search_err}", exc_info=True)
+                 # If the search call itself fails, return empty list immediately
+                 return []
                     
-            # If we have no URLs, gracefully handle it
+            # If we have no URLs after trying, gracefully handle it
             if not fetched_urls:
                 logging.warning(f"Search for '{query}' returned no results.")
                 return []
 
+            # Process the fetched URLs
+            count_success = 0
             for url in fetched_urls:
                 if url in urls_processed:
                     continue # Skip already processed URLs
-                if len(search_results_text) >= self.max_search_results:
+                if count_success >= self.max_search_results:
                     break # Stop once we have enough successful results
 
                 urls_processed.add(url)
@@ -76,7 +90,8 @@ class WebHandler:
                     if cleaned_text:
                         # Append a reasonable amount of text
                         search_results_text.append(cleaned_text[:2000])
-                        logging.info(f"URL {url} processed successfully (Content length: {len(cleaned_text)}). Got {len(search_results_text)} results so far.")
+                        count_success += 1 # Increment success count here
+                        logging.info(f"URL {url} processed successfully (Content length: {len(cleaned_text)}). Got {count_success} results so far.")
                     else:
                          logging.warning(f"URL {url} yielded no text content after cleaning.")
 
@@ -88,13 +103,15 @@ class WebHandler:
                     logging.warning(f"Error processing URL {url}: {str(e)}", exc_info=True)
                 # Ensure loop continues even if one URL fails
 
+        # This outer exception catch is now primarily for unexpected issues
+        # outside the specific library calls handled above.
         except Exception as e:
-            logging.error(f"Error during Google search API call for '{query}': {e}", exc_info=True)
-            # Return what we have so far, even if search failed mid-way
-            # No return here, let it proceed to the check below
+            logging.error(f"Unexpected error during _fetch_web_content for '{query}': {e}", exc_info=True)
+            # Return empty list in case of unexpected errors as well
+            return []
 
         if not search_results_text:
-             logging.warning(f"Web search for '{query}' returned no usable content.")
+             logging.warning(f"Web search for '{query}' returned no usable content after processing URLs.")
 
         return search_results_text
 
