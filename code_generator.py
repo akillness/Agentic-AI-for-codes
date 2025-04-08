@@ -132,12 +132,20 @@ class CodeGeneratorAgent:
                 required.append(package_name)
         return sorted(list(set(required))) # 중복 제거 및 정렬
 
-    def run(self, task: str, search_context: str | None = None, print_results: bool = False) -> Dict[str, Any]:
-        """작업 실행 (다국어 코드 생성, 패키지 감지, 실행 요청 감지)
+    def run(self, \
+            task: str, \
+            search_context: str | None = None, \
+            previous_code: str | None = None, \
+            error_message: str | None = None, \
+            print_results: bool = False\
+            ) -> Dict[str, Any]:
+        """작업 실행 (다국어 코드 생성, 패키지 감지, 실행 요청 감지, 코드 수정)
         
         Args:
             task (str): 사용자의 원본 작업 요청
             search_context (str | None, optional): 웹 검색 결과 (요약). Defaults to None.
+            previous_code (str | None, optional): 이전에 생성되었던 코드 (수정 요청 시). Defaults to None.
+            error_message (str | None, optional): 이전 코드 실행 시 발생한 오류 메시지 (수정 요청 시). Defaults to None.
             print_results (bool, optional): 결과를 콘솔에 출력할지 여부. Defaults to False.
             
         Returns:
@@ -145,49 +153,133 @@ class CodeGeneratorAgent:
         """
         
         detected_language, is_codegen_request, is_execution_request = self._detect_language_and_request(task)
+        is_correction_request = bool(previous_code and error_message)
 
-        if is_codegen_request and detected_language:
-            logging.info(f"LLM 코드 생성 요청 ({detected_language}): {task}")
+        if is_correction_request or (is_codegen_request and detected_language):
+            # 수정 요청인 경우 언어 재감지 (혹시나 해서)
+            if is_correction_request and not detected_language:
+                # 간단하게 python 코드로 가정 (추후 개선 가능)
+                detected_language = 'python' 
+                logging.info("수정 요청에서 언어가 불분명하여 Python으로 가정합니다.")
             
-            # 시스템 프롬프트 구성
-            system_prompt = f"You are a code generation assistant. Generate *only* the raw code in the requested language ({detected_language}) based on the user's request. Do not include any explanations, comments, markdown formatting (like ```{detected_language}), or introductory phrases. Just output the code itself."
-            if search_context:
+            if not detected_language: # 코드 생성인데 언어가 없는 이상한 경우
+                 return {
+                    "task": task,
+                    "result_type": "error",
+                    "result": "코드 생성을 요청했으나, 작업할 프로그래밍 언어를 특정할 수 없습니다.",
+                    "status": "failed"
+                }
+
+            if is_correction_request:
+                logging.info(f"LLM 코드 수정 요청 ({detected_language}): {task}")
+            else:
+                logging.info(f"LLM 코드 생성 요청 ({detected_language}): {task}")
+            
+            # 특정 키워드를 감지하여 프롬프트 강화
+            is_gui_request = any(keyword in task.lower() for keyword in ['gui', '인터페이스', 'ui', '화면', 'window', 'tkinter', 'pygame', 'pyqt', 'qt'])
+            is_particle_request = any(keyword in task.lower() for keyword in ['파티클', '폭죽', '입자', 'particle', 'firework', '애니메이션', 'animation'])
+            
+            # --- 시스템 프롬프트 구성 --- 
+            if is_correction_request:
+                system_prompt = f"""You are a code correction assistant. Fix the provided {detected_language} code based on the user's original request and the error message. 
+Output *only* the corrected, complete, raw code in {detected_language}. 
+Do not include explanations, comments, markdown formatting (like ```{detected_language}), or introductory phrases. Just output the corrected code itself.
+
+EXTREMELY IMPORTANT: Ensure the corrected code is safe and does not contain harmful, destructive, or malicious operations (like rm -rf, file deletion, fork bombs, etc.). Focus *only* on fixing the error according to the error message."""
+            else: # 코드 생성 요청
+                system_prompt = f"""You are a code generation assistant. Generate *only* the raw code in the requested language ({detected_language}) based on the user's request. Do not include any explanations, comments, markdown formatting (like ```{detected_language}), or introductory phrases. Just output the code itself.
+
+EXTREMELY IMPORTANT: Do NOT generate any harmful, destructive, malicious, or dangerous code. Never include commands like:
+- rm -rf, deltree, format, or any destructive file system operations
+- Fork bombs or infinite loops that consume system resources
+- Network attacks or scanning tools
+- Code that creates, modifies, or deletes system files
+- Code that attempts to access sensitive user data
+- Code that disables security features
+
+Only generate educational, useful, and safe code that demonstrates the requested functionality."""
+            
+            # 특정 요청에 대한 프롬프트 강화 (생성 시에만)
+            if not is_correction_request:
+                if is_gui_request:
+                    system_prompt += f"\n\nInclude necessary imports and full implementation for a GUI application in {detected_language}. Ensure the code is complete, runnable, and properly handles window creation, user interface components, and interactions."
+                
+                if is_particle_request:
+                    system_prompt += f"\n\nCreate code for particle or fireworks simulation. Include animations, particle physics, color effects, and visual rendering. Ensure the code is complete, self-contained, and demonstrates particle movement, colors, and dynamic effects."
+                    
+                    if detected_language == 'python':
+                        system_prompt += "\n\nRecommended libraries: pygame for visual effects, tkinter for simple GUIs, or numpy for calculations. Use appropriate timing, loops, and event handling to create smooth animations."
+            
+            # 검색 컨텍스트 추가 (생성 시에만)
+            if search_context and not is_correction_request:
                 system_prompt += f"\n\nUse the following search results as context if relevant:\n--- SEARCH CONTEXT ---\n{search_context}\n--- END SEARCH CONTEXT ---"
                 logging.info("코드 생성 시 검색 컨텍스트 사용")
+
+            # --- 사용자 프롬프트 구성 --- 
+            if is_correction_request:
+                user_prompt = f"Original Request: {task}\n\nPrevious {detected_language} Code (with error):\n```\n{previous_code}\n```\n\nError Message:\n```\n{error_message}\n```\n\nPlease fix the code based on the error message and the original request. Provide only the corrected code."
+            else: # 코드 생성 요청
+                user_prompt = f"Generate {detected_language} code for the following request: {task}"
+                if is_gui_request and is_particle_request:
+                    user_prompt += "\n\nCreate a self-contained program that shows animated particles or fireworks with a proper GUI interface. The program should:\n1. Open a window with controls (buttons, sliders, etc.)\n2. Display animated particles or fireworks effects\n3. Allow users to interact with or control the particle effects\n4. Include proper animation loops and timing\n5. Handle window events correctly"
 
             try:
                 response = self.client.chat.completions.create(
                     model="gpt-3.5-turbo", 
                     messages=[
                         {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"Generate {detected_language} code for the following request: {task}"}
+                        {"role": "user", "content": user_prompt}
                     ],
-                    temperature=0.5, 
+                    temperature=0.4, # 수정 작업이므로 약간 더 결정론적으로
                 )
                 raw_code_content = response.choices[0].message.content.strip()
                 code_content = self._clean_llm_code_output(raw_code_content, detected_language)
+                
+                # 위험한 코드 패턴 검사
+                if detected_language == 'python':
+                    dangerous_patterns = [
+                        r'rm\s+-rf', r'rmdir', r'shutil\.rmtree', 
+                        r'os\.remove', r'os\.unlink',
+                        r'os\.system\(.*rm', r'subprocess\..*rm',
+                        r'format\(.*C:', r'format\(.*/', 
+                        r'__import__\([\'"]os[\'"]\)', r'exec\(', r'eval\(',
+                        r'open\(.*/etc/passwd', r'open\(.*/etc/shadow',
+                        # 'socket\.' # 소켓은 일반적인 네트워킹에 사용되므로 제외 고려
+                    ]
+                    
+                    if any(re.search(pattern, code_content, re.IGNORECASE) for pattern in dangerous_patterns):
+                        logging.warning("위험한 코드 패턴 감지됨. 코드 생성/수정 거부.")
+                        
+                        return {
+                            "task": task,
+                            "result_type": "error",
+                            "result": "보안상의 이유로 이 코드 요청을 처리할 수 없습니다. 위험하거나 파괴적인 동작이 감지되었습니다. 다른 요청을 시도해 주세요.",
+                            "status": "failed"
+                        }
                 
                 required_packages = []
                 if detected_language == 'python':
                     imported_modules = self._find_python_imports(code_content)
                     required_packages = self._check_required_packages(imported_modules)
                     if required_packages:
-                         logging.info(f"감지된 필요 패키지: {required_packages}")
+                         logging.info(f"감지된 필요 패키지 (생성/수정 후): {required_packages}")
 
                 if not code_content:
                     logging.warning(f"LLM이 빈 {detected_language} 코드를 반환했거나 파싱 실패.")
-                    code_content = f"# LLM이 {detected_language} 코드를 생성하지 못했거나 응답 파싱에 실패했습니다." 
+                    code_content = f"# LLM이 {detected_language} 코드를 생성/수정하지 못했거나 응답 파싱에 실패했습니다." 
                 
                 file_extension = self.lang_to_ext.get(detected_language, '.txt')
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 filename = f"generated_code_{timestamp}{file_extension}"
-                file_path = os.path.join(self.output_dir, filename)
+                # 수정 요청인 경우, 동일한 파일명을 유지하도록 할 수도 있으나, 충돌 방지를 위해 새 파일 생성
+                # (main.py에서 덮어쓸지 결정)
+                file_path = os.path.join(self.output_dir, filename) 
                 
                 saved_message = ""
                 try:
                     with open(file_path, 'w', encoding='utf-8') as f:
                         f.write(code_content)
-                    saved_message = f"코드가 다음 경로에 저장되었습니다: {file_path}"
+                    saved_message = f"코드(생성/수정)가 다음 경로에 저장되었습니다: {file_path}"
                 except Exception as e:
                     saved_message = f"코드 저장 중 오류 발생: {e}"
                     logging.error(saved_message)
@@ -196,6 +288,7 @@ class CodeGeneratorAgent:
                 result = {
                     "task": task,
                     "result_type": "code_generation", 
+                    "is_correction": is_correction_request, # 수정 여부 플래그 추가
                     "language": detected_language,
                     "generated_code": code_content,
                     "saved_path_message": saved_message,
@@ -211,7 +304,7 @@ class CodeGeneratorAgent:
                 return {
                     "task": task,
                     "result_type": "error",
-                    "result": f"LLM {detected_language} 코드 생성 중 오류 발생: {e}",
+                    "result": f"LLM {detected_language} 코드 생성/수정 중 오류 발생: {e}",
                     "status": "failed"
                 }
 

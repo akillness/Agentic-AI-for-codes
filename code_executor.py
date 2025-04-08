@@ -205,7 +205,8 @@ class CodeExecutor:
             if language == 'c#' and os.name != 'nt':
                  cmd.insert(0, 'mono')
                  
-            returncode, stdout, stderr = CodeExecutor._execute_with_popen(cmd, timeout=10)
+            #returncode, stdout, stderr = CodeExecutor._execute_with_popen(cmd, timeout=10)
+            returncode, stdout, stderr = CodeExecutor._execute_with_popen(cmd)
             
             # ModuleNotFoundError 감지
             module_match = re.search(r"ModuleNotFoundError: No module named '(.+?)'", stderr)
