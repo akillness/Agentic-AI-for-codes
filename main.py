@@ -164,14 +164,23 @@ class AgentAI:
         """코드 생성 단계 실행 - CodeGeneratorAgent 사용"""
         task = parameters.get("task", "")
         use_search_context = parameters.get("use_search_context", False)
-        
+
+        search_context_data = context.get("search_result") # Get the whole search result dict
         search_context = None
-        if use_search_context and "search_result" in context:
-            search_context = context["search_result"].get("result")
-        
+        search_step_success = False
+        if search_context_data:
+             search_context = search_context_data.get("result")
+             search_step_success = search_context_data.get("success", False)
+
+        # Log the context being passed
+        logging.info(f"Code generation called with task: '{task[:50]}...', use_search_context: {use_search_context}")
+        if use_search_context:
+             logging.info(f"Search context available: {bool(search_context)}, Step Success: {search_step_success}, Content: '{str(search_context)[:100]}...'")
+
+
         # CodeGeneratorAgent 호출
         agent_result = self.code_generator.run(task, search_context=search_context)
-        
+
         # 결과 처리
         result_type = agent_result.get('result_type')
         if result_type == 'code_generation':
@@ -181,18 +190,31 @@ class AgentAI:
             execute_request = agent_result.get('execute_request', False)
             language_name = agent_result.get('language', 'unknown')
             required_packages = agent_result.get('required_packages', [])
-            
-            final_message = f"--- 생성된 코드 ({language_name}) ---\n{generated_code}\n-------------------\n{save_msg}"
-            
+
+            notification = "" # 알림 메시지 초기화
+            # Add notification if context was requested BUT either not available/empty OR the search step failed
+            if use_search_context and (not search_context or not str(search_context).strip() or not search_step_success):
+                reason = "없거나 비어 있음" if not search_context or not str(search_context).strip() else "검색 단계 실패"
+                notification = f"\\n\\n[알림] 요청된 웹 검색 컨텍스트({reason}) 없이 코드를 생성했습니다."
+                logging.warning(f"Code generated without requested web search context (Reason: {reason}).")
+
+
+            # Construct the main message part
+            main_message = f"--- 생성된 코드 ({language_name}) ---\n{generated_code}\n-------------------\n{save_msg}"
+
+            # Combine main message and notification
+            final_message = main_message + notification
+
+
             # 필요한 패키지 설치
             installation_successful = True
             if required_packages:
                 logging.info(f"필요 패키지 감지됨: {required_packages}. 자동 설치 시도...")
                 final_message += f"\n\n[알림] 다음 패키지 자동 설치 시도: {', '.join(required_packages)}"
-                
+
                 install_command_list = [sys.executable, "-m", "pip", "install"] + required_packages
                 install_ret, _, install_stderr = CodeExecutor._execute_with_popen(install_command_list, timeout=120)
-                
+
                 if install_ret == 0:
                     logging.info(f"패키지 설치 성공: {', '.join(required_packages)}")
                     final_message += "\n설치 성공."
@@ -200,10 +222,9 @@ class AgentAI:
                     installation_successful = False
                     logging.error(f"패키지 설치 실패: {install_stderr}")
                     final_message += f"\n설치 실패:\n{install_stderr[:500]}..."
-            
+
             # 자동 실행 요청이 있을 경우
             if execute_request and installation_successful and saved_file_path:
-                # Explicitly set this in the context for the next step
                 context["pending_execution"] = {
                     "file_path": saved_file_path,
                     "type": "file",
@@ -232,6 +253,8 @@ class AgentAI:
             }
         else:
             error_msg = agent_result.get('result', 'LLM 처리 중 알 수 없는 오류 발생')
+            logging.error(f"Code generation step failed. Agent Result: {agent_result}") # Log the actual result
+
             return {"success": False, "result": error_msg}
 
     def _execute_file_execution_step(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:

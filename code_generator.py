@@ -209,19 +209,24 @@ class CodeGeneratorAgent:
             error_message: str | None = None, \
             print_results: bool = False\
             ) -> Dict[str, Any]:
-        """작업 실행 (다국어 코드 생성, 패키지 감지, 실행 요청 감지, 코드 수정)
-        
+        """코드를 생성하거나 수정하는 작업을 실행합니다.
+
         Args:
-            task (str): 사용자의 원본 작업 요청
-            search_context (str | None, optional): 웹 검색 결과 (요약). Defaults to None.
-            previous_code (str | None, optional): 이전에 생성되었던 코드 (수정 요청 시). Defaults to None.
-            error_message (str | None, optional): 이전 코드 실행 시 발생한 오류 메시지 (수정 요청 시). Defaults to None.
+            task (str): 사용자의 작업 요청 (예: "Python으로 웹 스크레이퍼 만들기").
+            search_context (str | None, optional): 웹 검색 결과 (컨텍스트로 사용). Defaults to None.
+            previous_code (str | None, optional): 수정할 기존 코드. Defaults to None.
+            error_message (str | None, optional): 수정이 필요한 코드의 오류 메시지. Defaults to None.
             print_results (bool, optional): 결과를 콘솔에 출력할지 여부. Defaults to False.
-            
+
         Returns:
-            Dict[str, Any]: 작업 처리 결과 딕셔너리
+            Dict[str, Any]: 작업 결과 (성공 여부, 생성된 코드, 저장 경로 등).
         """
+        logging.info(f"CodeGeneratorAgent.run 호출됨 - 작업: '{task[:50]}...'")
         
+        # 결과 메시지 초기화
+        result_message = "알 수 없는 오류 발생 (초기값)" # Initialize result_message here
+
+        # 작업 유형 및 요청 언어 탐지
         detected_language, is_codegen_request, is_execution_request = self._detect_language_and_request(task)
         is_correction_request = bool(previous_code and error_message)
 
@@ -252,12 +257,14 @@ class CodeGeneratorAgent:
             # --- 시스템 프롬프트 구성 --- 
             if is_correction_request:
                 system_prompt = f"""You are a code correction assistant. Fix the provided {detected_language} code based on the user's original request and the error message. 
-Output *only* the corrected, complete, raw code in {detected_language}. 
-Do not include explanations, comments, markdown formatting (like ```{detected_language}), or introductory phrases. Just output the corrected code itself.
+Output *only* the corrected, complete code enclosed in a single markdown code block like ```{detected_language}\n...code...\n```.
+Do not include any other text, explanations, or comments outside the code block.
 
 EXTREMELY IMPORTANT: Ensure the corrected code is safe and does not contain harmful, destructive, or malicious operations (like rm -rf, file deletion, fork bombs, etc.). Focus *only* on fixing the error according to the error message."""
             else: # 코드 생성 요청
-                system_prompt = f"""You are a code generation assistant. Generate *only* the raw code in the requested language ({detected_language}) based on the user's request. Do not include any explanations, comments, markdown formatting (like ```{detected_language}), or introductory phrases. Just output the code itself.
+                system_prompt = f"""You are a code generation assistant. Generate *only* the raw code in the requested language ({detected_language}) based on the user's request. 
+Provide the complete code enclosed in a single markdown code block like ```{detected_language}\n...code...\n```.
+Do not add any other text, explanations, comments, or introductory phrases outside the code block.
 
 EXTREMELY IMPORTANT: Do NOT generate any harmful, destructive, malicious, or dangerous code. Never include commands like:
 - rm -rf, deltree, format, or any destructive file system operations
@@ -306,7 +313,7 @@ Only generate educational, useful, and safe code that demonstrates the requested
 
             generated_code = None
             required_packages = []
-            status = "failed" # Default status
+            status = "success"
             llm_response_text = "" # Store full response
 
             try:
@@ -320,40 +327,67 @@ Only generate educational, useful, and safe code that demonstrates the requested
                 )
                 llm_response_text = response.choices[0].message.content.strip()
                 
-                # --- Refined Code Extraction ---
-                # 1. Search for the first code block using regex
-                code_block_pattern = r"```(?:python|\\w*)?\\s*\\n(.*?)\\n```"
-                match = re.search(code_block_pattern, llm_response_text, re.DOTALL | re.IGNORECASE)
-
-                if match:
-                    # 2. Extract code if block found
-                    extracted_code = match.group(1).strip()
-                    logging.info(f"Code block extracted successfully. Length: {len(extracted_code)}")
-                    
-                    # 3. Basic safety check on extracted code (can be enhanced)
-                    if self._is_potentially_harmful(extracted_code):
-                         logging.warning(f"Potentially harmful code pattern detected in extracted block.")
-                         result_message = f"LLM generated potentially harmful code patterns."
-                         status = "failed_safety"
-                    else:
-                         generated_code = extracted_code
-                         status = "success"
-                         logging.info(f"Code generation successful ({detected_language}).")
-                else:
-                    # 4. If no code block found, check if it's a refusal
-                    logging.warning("No code block found in LLM response.")
-                    if self._is_refusal_message(llm_response_text):
-                        logging.warning(f"LLM refused to generate/correct code. Response: {llm_response_text}")
-                        result_message = f"LLM이 코드 생성/수정을 거부했습니다:\\n---\\n{llm_response_text}\\n---"
-                        status = "refused"
-                    else:
-                        # Not a refusal, but no code block - maybe just text?
-                        logging.warning("LLM response did not contain a code block and wasn't detected as refusal.")
-                        result_message = f"LLM이 코드를 생성하지 못했습니다. 응답 내용:\\n---\\n{llm_response_text}\\n---"
-                        status = "failed_no_code"
+                # 코드 블록 추출 (정규 표현식 사용, 여러 블록 가능성 고려)
+                code_blocks = re.findall(r"```(?:[\w-]+)?\n(.*?)```", llm_response_text, re.DOTALL)
                 
+                if code_blocks:
+                    # 가장 긴 코드 블록을 사용하거나, 첫 번째 블록을 사용
+                    generated_code = max(code_blocks, key=len).strip()
+                    # Clean the extracted code block
+                    generated_code = self._clean_llm_code_output(generated_code, detected_language)
+                    logging.info(f"Extracted code block (length: {len(generated_code)}).")
+                else:
+                     # --- Modification Start: Handle no code block found --- 
+                     logging.warning("No markdown code block found in LLM response.")
+                     # Check for refusal before declaring failure
+                     if self._is_refusal_message(llm_response_text):
+                         logging.warning("LLM refused to generate code (detected after no code block).")
+                         result_message = f"LLM이 코드 생성을 거부했습니다:\\n---\\n{llm_response_text}\\n---"
+                         status = "refused"
+                     else:
+                         # Treat as failure if no code block and not a refusal
+                         result_message = f"LLM 응답에서 코드 블록을 찾을 수 없습니다. 응답 내용:\\n---\\n{llm_response_text}\\n---"
+                         status = "failed_no_code_block"
+                     generated_code = None # Ensure generated_code is None if no block found
+                     # --- Modification End ---
+
+                # Handle empty or harmful code after potential extraction
+                if generated_code:
+                    # Harmfulness Check
+                    if self._is_potentially_harmful(generated_code):
+                        logging.warning("Potentially harmful code detected and blocked.")
+                        result_message = "잠재적으로 유해한 코드가 감지되어 차단되었습니다."
+                        status = "failed_harmful"
+                        generated_code = None # Discard harmful code
+                    # Refusal check inside code block (less likely but possible)
+                    elif self._is_refusal_message(generated_code):
+                         logging.warning("LLM refusal message found within code block.")
+                         result_message = f"LLM이 코드 생성을 거부했습니다 (코드 블록 내부):\\n---\\n{generated_code}\\n---"
+                         status = "refused"
+                         generated_code = None
+                elif status == "success": # If no code extracted but status wasn't already failure/refusal
+                     # This can happen if code_blocks was empty initially
+                     # We already handled this case above where we set status to failed_no_code_block
+                     # This block might be redundant now, but keep for safety unless tested otherwise
+                     if not self._is_refusal_message(llm_response_text): # Double check refusal
+                        logging.warning("LLM response did not contain usable code (checked again).")
+                        result_message = f"LLM 응답에 유효한 코드가 없습니다. 응답 내용:\\n---\\n{llm_response_text}\\n---"
+                        status = "failed_no_usable_code"
+                     else:
+                        # Refusal detected here if not caught earlier
+                        result_message = f"LLM이 코드 생성을 거부했습니다 (재확인):\\n---\\n{llm_response_text}\\n---"
+                        status = "refused"
+
+                # Check for empty LLM response (handled earlier, but keep check)
+                if not llm_response_text.strip():
+                     logging.warning("LLM response was empty.")
+                     result_message = "LLM 응답이 비어 있습니다."
+                     status = "failed_empty_response"
+
                 # --- Package Check (only if code generation was successful) ---
-                if status == "success" and detected_language == 'python':
+                # Ensure required_packages is initialized
+                required_packages = [] 
+                if status == "success" and generated_code and detected_language == 'python':
                     imports = self._find_python_imports(generated_code)
                     required_packages = self._check_required_packages(imports)
                     if required_packages:
