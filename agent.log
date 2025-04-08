@@ -1,0 +1,425 @@
+2025-04-07 23:50:13,620 - ERROR - 프로그램 실행 중 오류 발생: OPENAI_API_KEY가 설정되지 않았습니다.
+2025-04-07 23:51:01,845 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-07 23:51:01,846 - INFO - 디렉토리 생성 완료: test_workspace/
+2025-04-07 23:51:01,846 - INFO - 작업 시작: 탐색: test_workspace
+2025-04-07 23:51:01,848 - INFO - 파일 분석 완료 - 타입: text/javascript, 언어: javascript
+2025-04-07 23:51:01,848 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-07 23:51:01,848 - INFO - 파일 분석 완료 - 타입: application/rb, 언어: ruby
+2025-04-07 23:51:01,848 - INFO - 작업 완료
+2025-04-07 23:51:01,848 - INFO - 작업 시작: 생성: test_workspace/new_dir/
+2025-04-07 23:51:01,848 - INFO - 디렉토리 생성 완료: test_workspace/new_dir/
+2025-04-07 23:51:01,848 - INFO - 작업 완료
+2025-04-07 23:51:01,848 - INFO - 작업 시작: 이동: test_workspace/test.py -> test_workspace/new_dir/test.py
+2025-04-07 23:51:01,848 - INFO - 파일/디렉토리 이동 완료: test_workspace/test.py -> test_workspace/new_dir/test.py
+2025-04-07 23:51:01,848 - INFO - 작업 완료
+2025-04-07 23:51:01,848 - INFO - 작업 시작: 삭제: test_workspace/test.js
+2025-04-07 23:51:01,849 - INFO - 파일 삭제 완료: test_workspace/test.js
+2025-04-07 23:51:01,849 - INFO - 작업 완료
+2025-04-07 23:51:01,849 - INFO - 작업 시작: 탐색: test_workspace
+2025-04-07 23:51:01,849 - INFO - 파일 분석 완료 - 타입: application/rb, 언어: ruby
+2025-04-07 23:51:01,849 - INFO - 작업 완료
+2025-04-07 23:51:01,849 - INFO - 작업 시작: 실행: test_workspace/new_dir/test.py
+2025-04-07 23:51:01,849 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-07 23:51:01,849 - INFO - 파일 실행 시도 (언어: python)
+2025-04-07 23:51:01,863 - INFO - 파일 실행 성공
+2025-04-07 23:51:01,863 - INFO - 1개의 오래된 대화가 메모리에서 제거되었습니다.
+2025-04-07 23:51:01,863 - INFO - 작업 완료
+2025-04-07 23:51:01,863 - INFO - 작업 시작: 실행: test_workspace/test.rb
+2025-04-07 23:51:01,863 - INFO - 파일 분석 완료 - 타입: application/rb, 언어: ruby
+2025-04-07 23:51:01,863 - INFO - 파일 실행 시도 (언어: ruby)
+2025-04-07 23:51:02,486 - INFO - 파일 실행 성공
+2025-04-07 23:51:02,487 - INFO - 1개의 오래된 대화가 메모리에서 제거되었습니다.
+2025-04-07 23:51:02,487 - INFO - 작업 완료
+2025-04-07 23:51:02,487 - INFO - 작업 시작: ```python
+print('Hello from code block!')
+for i in range(3):
+    print(f'Number: {i}')
+```
+2025-04-07 23:51:02,487 - INFO - 코드 실행 시도 (언어: python)
+2025-04-07 23:51:02,502 - INFO - 코드 실행 성공
+2025-04-07 23:51:02,502 - INFO - 1개의 오래된 대화가 메모리에서 제거되었습니다.
+2025-04-07 23:51:02,502 - INFO - 작업 완료
+2025-04-07 23:51:02,502 - INFO - 작업 시작: 2024년 인공지능 기술 트렌드는 무엇인가요?
+2025-04-07 23:51:02,502 - INFO - 검색 시도: 2024년 인공지능 기술 트렌드는 무엇인가요?
+2025-04-07 23:51:02,502 - INFO - 구글 검색 시작...
+2025-04-07 23:51:03,385 - INFO - URL 처리 중: https://www.irsglobal.com/bbs/rwdboard/21651
+2025-04-07 23:51:03,566 - INFO - URL https://www.irsglobal.com/bbs/rwdboard/21651 처리 완료
+2025-04-07 23:51:03,566 - INFO - URL 처리 중: https://botpress.com/ko/blog/top-artificial-intelligence-trends
+2025-04-07 23:51:04,010 - INFO - URL https://botpress.com/ko/blog/top-artificial-intelligence-trends 처리 완료
+2025-04-07 23:51:04,010 - INFO - URL 처리 중: https://blogs.nvidia.co.kr/blog/2024-ai-predictions/
+2025-04-07 23:51:04,129 - INFO - URL https://blogs.nvidia.co.kr/blog/2024-ai-predictions/ 처리 완료
+2025-04-07 23:51:04,130 - INFO - 검색 성공: 3개의 결과 찾음
+2025-04-07 23:51:04,130 - INFO - 1개의 오래된 대화가 메모리에서 제거되었습니다.
+2025-04-07 23:51:04,130 - INFO - 작업 완료
+2025-04-07 23:51:04,131 - INFO - 디렉토리 삭제 완료: test_workspace
+2025-04-07 23:58:28,263 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-07 23:58:37,103 - INFO - 작업 시작: 2
+2025-04-07 23:58:37,104 - INFO - 검색 시도: 2
+2025-04-07 23:58:37,104 - INFO - 구글 검색 시작...
+2025-04-07 23:58:37,595 - INFO - URL 처리 중: https://www.youtube.com/watch?v=-s7TCuCpB5c
+2025-04-07 23:58:38,755 - INFO - URL https://www.youtube.com/watch?v=-s7TCuCpB5c 처리 완료
+2025-04-07 23:58:38,755 - INFO - URL 처리 중: https://www.youtube.com/watch?v=Fc9g2tiJmvw
+2025-04-07 23:58:40,039 - INFO - URL https://www.youtube.com/watch?v=Fc9g2tiJmvw 처리 완료
+2025-04-07 23:58:40,040 - INFO - URL 처리 중: https://namu.wiki/w/2
+2025-04-07 23:58:40,335 - INFO - URL https://namu.wiki/w/2 처리 완료
+2025-04-07 23:58:40,335 - INFO - 검색 성공: 3개의 결과 찾음
+2025-04-07 23:58:40,335 - INFO - 작업 완료
+2025-04-07 23:59:14,109 - INFO - 작업 시작: yout에서 게임과 관련된 비디오 10개 알려주고 키워드도 알려줘
+2025-04-07 23:59:14,110 - INFO - 검색 시도: yout에서 게임과 관련된 비디오 10개 알려주고 키워드도 알려줘
+2025-04-07 23:59:14,110 - INFO - 구글 검색 시작...
+2025-04-07 23:59:14,673 - INFO - URL 처리 중: https://m.youtube.com/watch?v=kIZ4hWggsGY&t=12m56s
+2025-04-07 23:59:15,798 - INFO - URL https://m.youtube.com/watch?v=kIZ4hWggsGY&t=12m56s 처리 완료
+2025-04-07 23:59:15,798 - INFO - URL 처리 중: https://www.youtube.com/watch?v=p2tXTKxsqag
+2025-04-07 23:59:16,694 - INFO - URL https://www.youtube.com/watch?v=p2tXTKxsqag 처리 완료
+2025-04-07 23:59:16,694 - INFO - URL 처리 중: https://www.gjcity.go.kr/gjvision/apps/webzine/list/%EA%B4%91%EC%A3%BC%EC%83%9D%ED%99%9C
+2025-04-07 23:59:17,063 - INFO - URL https://www.gjcity.go.kr/gjvision/apps/webzine/list/%EA%B4%91%EC%A3%BC%EC%83%9D%ED%99%9C 처리 완료
+2025-04-07 23:59:17,063 - INFO - 검색 성공: 3개의 결과 찾음
+2025-04-07 23:59:17,064 - INFO - 작업 완료
+2025-04-07 23:59:49,004 - INFO - 작업 시작: 간단한 계산기 python 코드로 작성하고 실행해줘
+2025-04-07 23:59:49,005 - INFO - 검색 시도: 간단한 계산기 python 코드로 작성하고 실행해줘
+2025-04-07 23:59:49,005 - INFO - 구글 검색 시작...
+2025-04-07 23:59:49,649 - INFO - URL 처리 중: https://m.blog.naver.com/blogger0112/222154041945
+2025-04-07 23:59:49,820 - INFO - URL https://m.blog.naver.com/blogger0112/222154041945 처리 완료
+2025-04-07 23:59:49,820 - INFO - URL 처리 중: https://wikidocs.net/191704
+2025-04-07 23:59:49,946 - INFO - URL https://wikidocs.net/191704 처리 완료
+2025-04-07 23:59:49,946 - INFO - URL 처리 중: https://workauto.tistory.com/entry/%ED%8C%8C%EC%9D%B4%EC%8D%AC%EC%9C%BC%EB%A1%9C-%EA%B3%84%EC%82%B0%EA%B8%B0-%EB%A7%8C%EB%93%A4%EA%B8%B0
+2025-04-07 23:59:50,115 - INFO - URL https://workauto.tistory.com/entry/%ED%8C%8C%EC%9D%B4%EC%8D%AC%EC%9C%BC%EB%A1%9C-%EA%B3%84%EC%82%B0%EA%B8%B0-%EB%A7%8C%EB%93%A4%EA%B8%B0 처리 완료
+2025-04-07 23:59:50,116 - INFO - 검색 성공: 3개의 결과 찾음
+2025-04-07 23:59:50,116 - INFO - 작업 완료
+2025-04-08 00:01:03,349 - INFO - 작업 시작: python으로 계산기 프로그코드 작성해줘. 그리고 코드 실행 해줘
+2025-04-08 00:01:03,349 - ERROR - 파일 실행 중 오류 발생: 파일을 찾을 수 없습니다: 해줘
+2025-04-08 00:01:03,349 - INFO - 작업 완료
+2025-04-08 00:05:40,909 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:05:54,296 - INFO - 작업 시작: 간단한 계산기능을 cpp 로 작성해줘
+2025-04-08 00:05:54,297 - INFO - 검색 시도: 간단한 계산기능을 cpp 로 작성해줘
+2025-04-08 00:05:54,297 - INFO - 구글 검색 시작...
+2025-04-08 00:05:54,954 - INFO - URL 처리 중: http://m.blog.naver.com/blanky_wd/220754295167
+2025-04-08 00:05:55,171 - INFO - URL http://m.blog.naver.com/blanky_wd/220754295167 처리 완료
+2025-04-08 00:05:55,171 - INFO - URL 처리 중: https://andongmin.com/docs/cpp/ch1/ch1-5
+2025-04-08 00:06:00,213 - WARNING - URL https://andongmin.com/docs/cpp/ch1/ch1-5 처리 중 오류: HTTPSConnectionPool(host='andongmin.com', port=443): Read timed out. (read timeout=5)
+2025-04-08 00:06:00,214 - INFO - URL 처리 중: https://learn.microsoft.com/ko-kr/cpp/get-started/tutorial-console-cpp?view=msvc-170
+2025-04-08 00:06:00,551 - INFO - URL https://learn.microsoft.com/ko-kr/cpp/get-started/tutorial-console-cpp?view=msvc-170 처리 완료
+2025-04-08 00:06:00,552 - INFO - 검색 성공: 2개의 결과 찾음
+2025-04-08 00:06:00,552 - INFO - 작업 완료
+2025-04-08 00:06:17,651 - INFO - 작업 시작: python을 이용해서 계산기 프로그램 작해줘.
+2025-04-08 00:06:17,651 - INFO - 검색 시도: python을 이용해서 계산기 프로그램 작해줘.
+2025-04-08 00:06:17,651 - INFO - 구글 검색 시작...
+2025-04-08 00:06:18,280 - INFO - URL 처리 중: https://workauto.tistory.com/entry/%ED%8C%8C%EC%9D%B4%EC%8D%AC%EC%9C%BC%EB%A1%9C-%EA%B3%84%EC%82%B0%EA%B8%B0-%EB%A7%8C%EB%93%A4%EA%B8%B0
+2025-04-08 00:06:18,453 - INFO - URL https://workauto.tistory.com/entry/%ED%8C%8C%EC%9D%B4%EC%8D%AC%EC%9C%BC%EB%A1%9C-%EA%B3%84%EC%82%B0%EA%B8%B0-%EB%A7%8C%EB%93%A4%EA%B8%B0 처리 완료
+2025-04-08 00:06:18,453 - INFO - URL 처리 중: https://sdc-james.gitbook.io/onebook/3./3.8./3.8.4.
+2025-04-08 00:06:18,793 - INFO - URL https://sdc-james.gitbook.io/onebook/3./3.8./3.8.4. 처리 완료
+2025-04-08 00:06:18,793 - INFO - URL 처리 중: https://blog.naver.com/nkj2001/222691811613?viewType=pc
+2025-04-08 00:06:18,850 - INFO - URL https://blog.naver.com/nkj2001/222691811613?viewType=pc 처리 완료
+2025-04-08 00:06:18,850 - INFO - 검색 성공: 3개의 결과 찾음
+2025-04-08 00:06:18,850 - INFO - 작업 완료
+2025-04-08 00:07:41,659 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:08:35,349 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:08:45,644 - INFO - 작업 시작: 컴파일: calc.cpp
+2025-04-08 00:08:45,646 - ERROR - 파일 분석 중 오류 발생: 파일을 찾을 수 없습니다: calc.cpp
+2025-04-08 00:09:21,415 - INFO - 작업 시작: 컴파일: calc.py
+2025-04-08 00:09:21,416 - ERROR - 파일 분석 중 오류 발생: 파일을 찾을 수 없습니다: calc.py
+2025-04-08 00:16:35,008 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:16:48,788 - INFO - 작업 시작: python을 이용해 간단한 계산기 코드 작성해줘.
+2025-04-08 00:17:11,108 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:17:20,183 - INFO - 작업 시작: python으로 간단한 코드 작성해줘.
+2025-04-08 00:19:16,071 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:19:28,587 - INFO - 작업 시작: python으로 간단한 계산기 코작성해줘.
+2025-04-08 00:20:14,981 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:20:43,833 - INFO - 작업 시작: pytho계산기 간단하게 작성해줘.
+2025-04-08 00:20:43,834 - INFO - 작업 완료
+2025-04-08 00:22:03,041 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:22:22,555 - INFO - 작업 시작: python을 이용해 간단한 계산기 코드 작성줘.
+2025-04-08 00:22:22,556 - INFO - 코드 실행 시도 (언어: python)
+2025-04-08 00:22:58,947 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:23:10,242 - INFO - 작업 시작: python을 이용한 간단한 계산기 코드 작성해줘
+2025-04-08 00:23:10,243 - INFO - 코드 실행 시도 (언어: python)
+2025-04-08 00:26:19,060 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:26:34,618 - INFO - 작업 시작: python 을 이용해 계코드 작성해줘
+2025-04-08 00:26:34,619 - INFO - 코드 실행 시도 (언어: python) using Popen
+2025-04-08 00:26:44,628 - WARNING - Process timed out after 10 seconds.
+2025-04-08 00:26:44,629 - WARNING - 코드 실행 시간 초과: Timeout Error: Process exceeded 10 seconds.
+
+2025-04-08 00:26:44,630 - INFO - 작업 완료
+2025-04-08 00:30:14,096 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:30:28,357 - INFO - 작업 시작: python을 이용한 계산기코드 작성해줘.
+2025-04-08 00:30:28,360 - INFO - 작업 완료
+2025-04-08 00:31:11,761 - INFO - 작업 시작: cpp을 이용해 계산기 코드 작성해줘
+2025-04-08 00:31:11,762 - INFO - 작업 완료
+2025-04-08 00:31:24,698 - INFO - 작업 시작: js를 이용해 계산기 코드 작성해줘.
+2025-04-08 00:31:24,699 - INFO - 작업 완료
+2025-04-08 00:31:34,568 - INFO - 작업 시작: python을 이용해서 구글 검색하는 코드 작성해줘.
+2025-04-08 00:31:34,569 - INFO - 작업 완료
+2025-04-08 00:32:01,531 - INFO - 작업 시작: python을 이용해서 구글 검색하는 코드 작성해줘.
+2025-04-08 00:32:01,533 - INFO - 작업 완료
+2025-04-08 00:32:03,245 - INFO - 작업 시작: --- 생성된 코드 ---python을 이용해서 구글 검색하는 코드 작성해줘.
+2025-04-08 00:32:03,246 - INFO - 1개의 오래된 대화가 메모리에서 제거되었습니다.
+2025-04-08 00:32:03,246 - INFO - 작업 완료
+2025-04-08 00:32:04,236 - INFO - 작업 시작: --- 생성된 코드 ---
+2025-04-08 00:32:04,236 - INFO - 1개의 오래된 대화가 메모리에서 제거되었습니다.
+2025-04-08 00:32:04,236 - INFO - 작업 완료
+2025-04-08 00:35:39,936 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:35:57,618 - INFO - 작업 시작: python을 이코드 작성해줘.
+2025-04-08 00:35:57,619 - INFO - LLM 코드 생성 요청: python을 이코드 작성해줘.
+2025-04-08 00:35:58,583 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:35:58,594 - INFO - 작업 완료
+2025-04-08 00:36:20,280 - INFO - 작업 시작: cpp를 이용해 계산기 코드 작성해줘.
+2025-04-08 00:36:20,281 - INFO - 작업 완료
+2025-04-08 00:41:02,426 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:41:21,144 - INFO - 작업 시작: python을 이용해 계산기 코드 작성해줘.
+2025-04-08 00:41:21,145 - INFO - LLM 코드 생성 요청: python을 이용해 계산기 코드 작성해줘.
+2025-04-08 00:41:23,578 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:41:23,584 - INFO - 작업 완료
+2025-04-08 00:41:51,905 - INFO - 작업 시작: cpp를 이용해 계산기 코드 작성해줘.
+2025-04-08 00:41:51,905 - INFO - 작업 완료
+2025-04-08 00:42:00,087 - INFO - 작업 시작: c를 이용해 계산기 코드 작성해줘
+2025-04-08 00:42:00,087 - INFO - 작업 완료
+2025-04-08 00:42:50,732 - INFO - 작업 시작: java 이용해서 계산기 코드 작성해줘.
+2025-04-08 00:42:50,732 - INFO - 작업 완료
+2025-04-08 00:43:02,919 - INFO - 작업 시작: C++ 계산기 코드 작성해줘
+2025-04-08 00:43:02,920 - INFO - 작업 완료
+2025-04-08 00:43:56,399 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:44:04,253 - INFO - 작업 시작: C++ 계산기 코드 작성해줘
+2025-04-08 00:44:04,254 - INFO - LLM 코드 생성 요청 (c++): C++ 계산기 코드 작성해줘
+2025-04-08 00:44:07,227 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:44:07,236 - INFO - 작업 완료
+2025-04-08 00:44:19,111 - INFO - 작업 시작: java 계산기 코드 작성해줘
+2025-04-08 00:44:19,112 - INFO - LLM 코드 생성 요청 (java): java 계산기 코드 작성해줘
+2025-04-08 00:44:20,911 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:44:20,915 - INFO - 작업 완료
+2025-04-08 00:44:49,893 - INFO - 작업 시작: python gui가 포함된 계산기 코드 작성해줘
+2025-04-08 00:44:49,894 - INFO - LLM 코드 생성 요청 (python): python gui가 포함된 계산기 코드 작성해줘
+2025-04-08 00:44:51,942 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:44:51,945 - INFO - 작업 완료
+2025-04-08 00:45:18,575 - INFO - 작업 시작: ython  gui가 포함된 계산기 코드하고 실행해줘.
+2025-04-08 00:45:18,576 - INFO - LLM 코드 생성 요청 (go): ython  gui가 포함된 계산기 코드하고 실행해줘.
+2025-04-08 00:45:24,214 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:45:24,215 - INFO - 작업 완료
+2025-04-08 00:46:01,866 - INFO - 작업 시작: python 계산기 코드 만들고 실행해줘
+2025-04-08 00:46:01,868 - INFO - LLM 코드 생성 요청 (python): python 계산기 코드 만들고 실행해줘
+2025-04-08 00:46:08,014 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:46:08,020 - INFO - 작업 완료
+2025-04-08 00:50:01,381 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:51:23,565 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:51:37,172 - INFO - 작업 시작: python 웹서치 프로그램 작줘
+2025-04-08 00:51:37,173 - INFO - LLM 코드 생성 요청 (python): python 웹서치 프로그램 작줘
+2025-04-08 00:51:38,221 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:51:38,238 - INFO - 작업 완료
+2025-04-08 00:52:59,972 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:54:33,878 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:54:51,108 - INFO - 작업 시작: python 웹서치하는 코드 작성하고 실행해줘. 게임기사 키워드야.
+2025-04-08 00:54:51,110 - INFO - LLM 코드 생성 요청 (python): python 웹서치하는 코드 작성하고 실행해줘. 게임기사 키워드야.
+2025-04-08 00:54:52,330 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:54:52,338 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_005452.py
+2025-04-08 00:54:52,338 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_005452.py using Popen
+2025-04-08 00:54:52,340 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 00:54:52,906 - INFO - 파일 실행 성공 (Popen)
+2025-04-08 00:54:52,906 - INFO - 작업 완료
+2025-04-08 00:55:27,740 - INFO - 작업 시작: pyth파티클 보여주는 코드 작성하고 실행해줘.
+2025-04-08 00:55:27,741 - INFO - LLM 코드 생성 요청 (go): pyth파티클 보여주는 코드 작성하고 실행해줘.
+2025-04-08 00:55:28,897 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 00:55:28,900 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_005528.go
+2025-04-08 00:55:28,900 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_005528.go using Popen
+2025-04-08 00:55:28,900 - INFO - 파일 분석 완료 - 타입: application/go, 언어: go
+2025-04-08 00:56:19,412 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:56:33,433 - INFO - 작업 시작: 대한민국대통령에 대해 검색해서 알려줘
+2025-04-08 00:56:33,434 - INFO - 작업 완료
+2025-04-08 00:56:40,293 - INFO - 작업 시작: 검색기능
+2025-04-08 00:56:40,293 - INFO - 작업 완료
+2025-04-08 00:58:02,177 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:58:14,208 - INFO - 작업 시작: 대한민국 령 검색해서 알려줘.
+2025-04-08 00:58:14,209 - INFO - 처리할 명령어가 없어 웹 검색 시도: 대한민국 령 검색해서 알려줘.
+2025-04-08 00:58:14,209 - INFO - 검색 시도: 대한민국 령 검색해서 알려줘.
+2025-04-08 00:58:14,209 - INFO - 구글 검색 시작...
+2025-04-08 00:58:39,653 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 00:58:47,667 - INFO - 작업 시작: 대한민국 대통령 알려줘.
+2025-04-08 00:58:47,668 - INFO - 처리할 명령어가 없어 웹 검색 시도: 대한민국 대통령 알려줘.
+2025-04-08 00:58:47,668 - INFO - 검색 시도: 대한민국 대통령 알려줘.
+2025-04-08 00:58:47,668 - INFO - 구글 검색 시작...
+2025-04-08 00:58:50,725 - INFO - URL 처리 중: https://en.wikipedia.org/wiki/Han_Duck-soo
+2025-04-08 00:58:51,467 - INFO - URL https://en.wikipedia.org/wiki/Han_Duck-soo 처리 완료
+2025-04-08 00:58:51,467 - INFO - URL 처리 중: https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EB%8C%80%ED%86%B5%EB%A0%B9_%EB%AA%A9%EB%A1%9D
+2025-04-08 00:58:52,034 - INFO - URL https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EB%8C%80%ED%86%B5%EB%A0%B9_%EB%AA%A9%EB%A1%9D 처리 완료
+2025-04-08 00:58:52,034 - INFO - URL 처리 중: https://namu.wiki/w/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%20%EB%8C%80%ED%86%B5%EB%A0%B9
+2025-04-08 00:58:52,888 - INFO - URL https://namu.wiki/w/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%20%EB%8C%80%ED%86%B5%EB%A0%B9 처리 완료
+2025-04-08 00:58:52,888 - INFO - 검색 성공: 3개의 결과 찾음
+2025-04-08 00:58:52,888 - INFO - 작업 완료
+2025-04-08 00:59:03,101 - INFO - 작업 시작: 대한민국 대통령이 누구인지 이름알려줘.
+2025-04-08 00:59:03,102 - INFO - 처리할 명령어가 없어 웹 검색 시도: 대한민국 대통령이 누구인지 이름알려줘.
+2025-04-08 00:59:03,102 - INFO - 검색 시도: 대한민국 대통령이 누구인지 이름알려줘.
+2025-04-08 00:59:03,102 - INFO - 구글 검색 시작...
+2025-04-08 00:59:06,150 - INFO - URL 처리 중: https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EB%8C%80%ED%86%B5%EB%A0%B9_%EB%AA%A9%EB%A1%9D
+2025-04-08 00:59:06,733 - INFO - URL https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EB%8C%80%ED%86%B5%EB%A0%B9_%EB%AA%A9%EB%A1%9D 처리 완료
+2025-04-08 00:59:06,733 - INFO - URL 처리 중: https://namu.wiki/w/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%20%EB%8C%80%ED%86%B5%EB%A0%B9
+2025-04-08 00:59:07,545 - INFO - URL https://namu.wiki/w/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%20%EB%8C%80%ED%86%B5%EB%A0%B9 처리 완료
+2025-04-08 00:59:07,545 - INFO - URL 처리 중: https://namu.wiki/w/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%20%EB%8C%80%ED%86%B5%EB%A0%B9/%EB%AA%85%EB%8B%A8
+2025-04-08 00:59:07,953 - INFO - URL https://namu.wiki/w/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%20%EB%8C%80%ED%86%B5%EB%A0%B9/%EB%AA%85%EB%8B%A8 처리 완료
+2025-04-08 00:59:07,953 - INFO - 검색 성공: 3개의 결과 찾음
+2025-04-08 00:59:07,953 - INFO - 작업 완료
+2025-04-08 01:00:18,111 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:00:28,541 - INFO - 작업 시작: 대한민국 2025년 대통령이 누군지 알려줘.
+2025-04-08 01:00:28,542 - INFO - 처리할 명령어가 없어 웹 검색 시도: 대한민국 2025년 대통령이 누군지 알려줘.
+2025-04-08 01:00:28,542 - INFO - 검색 및 요약 시도: 대한민국 2025년 대통령이 누군지 알려줘.
+2025-04-08 01:00:28,542 - INFO - 구글 검색 시작...
+2025-04-08 01:00:31,587 - INFO - URL 처리 중: https://namu.wiki/w/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%20%EB%8C%80%ED%86%B5%EB%A0%B9
+2025-04-08 01:00:32,534 - INFO - URL https://namu.wiki/w/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%20%EB%8C%80%ED%86%B5%EB%A0%B9 처리 완료 (내용 길이: 62603)
+2025-04-08 01:00:32,534 - INFO - URL 처리 중: https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EB%8C%80%ED%86%B5%EB%A0%B9_%EB%AA%A9%EB%A1%9D
+2025-04-08 01:00:33,194 - INFO - URL https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EB%8C%80%ED%86%B5%EB%A0%B9_%EB%AA%A9%EB%A1%9D 처리 완료 (내용 길이: 10257)
+2025-04-08 01:00:33,194 - INFO - 검색 결과 요약 시도 (컨텍스트 길이: 3007)...
+2025-04-08 01:00:34,011 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:00:34,018 - INFO - 검색 결과 요약 성공
+2025-04-08 01:00:34,018 - INFO - 작업 완료
+2025-04-08 01:02:03,893 - INFO - 작업 시작: python gui 추가해서 파샘플 코드 작성해서 실행해줘.
+2025-04-08 01:02:03,894 - INFO - LLM 코드 생성 요청 (python): python gui 추가해서 파샘플 코드 작성해서 실행해줘.
+2025-04-08 01:02:05,534 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:02:05,540 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_010205.py
+2025-04-08 01:02:05,540 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_010205.py using Popen
+2025-04-08 01:02:05,544 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:02:05,586 - ERROR - 파일 실행 실패 (Popen): Traceback (most recent call last):
+  File "/Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_010205.py", line 1, in <module>
+    import tkinter as tk
+  File "/Users/jangyoung/.pyenv/versions/3.11.5/lib/python3.11/tkinter/__init__.py", line 38, in <module>
+    import _tkinter # If this fails your Python may not be configured for Tk
+    ^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named '_tkinter'
+
+2025-04-08 01:02:05,586 - INFO - 작업 완료
+2025-04-08 01:05:28,778 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:08:10,380 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:08:33,981 - INFO - 작업 시작: python 파티클 ui 포함해샘플 코드 작성하고 실행해줘.
+2025-04-08 01:08:33,983 - INFO - LLM 코드 생성 요청 (python): python 파티클 ui 포함해샘플 코드 작성하고 실행해줘.
+2025-04-08 01:08:35,656 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:08:35,667 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_010835.py
+2025-04-08 01:08:35,667 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_010835.py using Popen
+2025-04-08 01:08:35,671 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:08:35,703 - ERROR - 파일 실행 실패 (Popen): Traceback (most recent call last):
+  File "/Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_010835.py", line 1, in <module>
+    import tkinter as tk
+  File "/Users/jangyoung/.pyenv/versions/3.11.5/lib/python3.11/tkinter/__init__.py", line 38, in <module>
+    import _tkinter # If this fails your Python may not be configured for Tk
+    ^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named '_tkinter'
+
+2025-04-08 01:08:35,704 - INFO - 작업 완료
+2025-04-08 01:11:42,621 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:12:58,191 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:13:14,078 - INFO - 작업 시작: python10개 파티클 생성하고 ui 로 보여주는 코드 작성하고 실행해줘
+2025-04-08 01:13:14,079 - INFO - LLM 코드 생성 요청 (python): python10개 파티클 생성하고 ui 로 보여주는 코드 작성하고 실행해줘
+2025-04-08 01:13:16,750 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:13:16,760 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011316.py
+2025-04-08 01:13:16,761 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011316.py using Popen
+2025-04-08 01:13:16,764 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:13:16,793 - ERROR - 파일 실행 실패 (Popen): Traceback (most recent call last):
+  File "/Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011316.py", line 1, in <module>
+    import tkinter as tk
+  File "/Users/jangyoung/.pyenv/versions/3.11.5/lib/python3.11/tkinter/__init__.py", line 38, in <module>
+    import _tkinter # If this fails your Python may not be configured for Tk
+    ^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named '_tkinter'
+
+2025-04-08 01:13:16,793 - INFO - 작업 완료
+2025-04-08 01:14:39,454 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:14:54,310 - INFO - 작업 시작: python 10개 파티클 생는 코드 작성하고 실행해줘
+2025-04-08 01:14:54,311 - INFO - LLM 코드 생성 요청 (python): python 10개 파티클 생는 코드 작성하고 실행해줘
+2025-04-08 01:14:55,613 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:14:55,618 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011455.py
+2025-04-08 01:14:55,618 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011455.py using Popen
+2025-04-08 01:14:55,619 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:14:55,635 - INFO - 파일 실행 성공 (Popen)
+2025-04-08 01:14:55,635 - INFO - 작업 완료
+2025-04-08 01:15:27,520 - INFO - 작업 시작: python 10개 파티클 ui로 만들어지는 코드 생성하고 실행해줘.
+2025-04-08 01:15:27,522 - INFO - LLM 코드 생성 요청 (python): python 10개 파티클 ui로 만들어지는 코드 생성하고 실행해줘.
+2025-04-08 01:15:30,062 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:15:30,064 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011530.py
+2025-04-08 01:15:30,064 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011530.py using Popen
+2025-04-08 01:15:30,064 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:15:30,101 - ERROR - 파일 실행 실패 (Popen): Traceback (most recent call last):
+  File "/Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011530.py", line 1, in <module>
+    import tkinter as tk
+  File "/Users/jangyoung/.pyenv/versions/3.11.5/lib/python3.11/tkinter/__init__.py", line 38, in <module>
+    import _tkinter # If this fails your Python may not be configured for Tk
+    ^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named '_tkinter'
+
+2025-04-08 01:15:30,101 - INFO - 작업 완료
+2025-04-08 01:19:17,980 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:19:40,309 - INFO - 작업 시작: python으로 폭죽터지는 파티클 ui포함해서 작성하고 실행해줘.
+2025-04-08 01:19:40,311 - INFO - LLM 코드 생성 요청 (python): python으로 폭죽터지는 파티클 ui포함해서 작성하고 실행해줘.
+2025-04-08 01:19:46,904 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:19:46,913 - INFO - 감지된 필요 패키지: ['pygame']
+2025-04-08 01:19:46,914 - INFO - 필요 패키지 감지됨: ['pygame']. 자동 설치 시도...
+2025-04-08 01:19:47,558 - INFO - 패키지 설치 성공: pygame"
+2025-04-08 01:19:47,559 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011946.py
+2025-04-08 01:19:47,559 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011946.py using Popen
+2025-04-08 01:19:47,560 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:19:51,133 - ERROR - 파일 실행 실패 (Popen): Traceback (most recent call last):
+  File "/Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011946.py", line 66, in <module>
+    firework.explode()
+  File "/Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011946.py", line 30, in explode
+    particle.move()
+  File "/Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_011946.py", line 43, in move
+    self.x += self.speed * 0.1 * pygame.math.cos(self.direction)
+                                 ^^^^^^^^^^^^^^^
+AttributeError: module 'pygame.math' has no attribute 'cos'
+
+2025-04-08 01:19:51,133 - INFO - 작업 완료
+2025-04-08 01:25:19,057 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:25:40,354 - INFO - 작업 시작: python달력 프로그램을 2025년도로 작성하고 실행해줘.
+2025-04-08 01:25:40,356 - INFO - LLM 코드 생성 요청 (python): python달력 프로그램을 2025년도로 작성하고 실행해줘.
+2025-04-08 01:25:41,420 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:25:41,429 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_012541.py
+2025-04-08 01:25:41,429 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_012541.py using Popen
+2025-04-08 01:25:41,431 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:25:41,461 - INFO - 파일 실행 성공 (Popen)
+2025-04-08 01:25:41,461 - INFO - 작업 완료
+2025-04-08 01:26:31,880 - INFO - 작업 시작: 검색해서 2025년 달력을 python코드로 작성하고 실행해줘.[D
+2025-04-08 01:26:31,881 - INFO - LLM 코드 생성 요청 (python): 검색해서 2025년 달력을 python코드로 작성하고 실행해줘.[D
+2025-04-08 01:26:33,031 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:26:33,032 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_012633.py
+2025-04-08 01:26:33,033 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_012633.py using Popen
+2025-04-08 01:26:33,033 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:26:33,069 - INFO - 파일 실행 성공 (Popen)
+2025-04-08 01:26:33,069 - INFO - 작업 완료
+2025-04-08 01:33:51,083 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:34:16,197 - INFO - 작업 시작: 2025년 달력을 검색해서 python gui 달력 프로그램을 작성하고 실행해줘.
+2025-04-08 01:34:16,197 - INFO - 핸들러 _handle_code_generation 선택됨
+2025-04-08 01:34:16,197 - INFO - LLM 코드 생성 요청 (python): 2025년 달력을 검색해서 python gui 달력 프로그램을 작성하고 실행해줘.
+2025-04-08 01:34:18,144 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:34:18,151 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_013418.py
+2025-04-08 01:34:18,151 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_013418.py using Popen
+2025-04-08 01:34:18,154 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 01:34:18,186 - WARNING - Module not found: _tkinter
+2025-04-08 01:34:18,187 - INFO - 작업 완료
+2025-04-08 01:35:00,386 - INFO - 도우미 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 01:35:23,876 - INFO - 작업 시작: 대한민2025선거일 알려줘.
+2025-04-08 01:35:23,876 - INFO - 핸들러 _handle_default 선택됨
+2025-04-08 01:35:23,876 - INFO - 처리할 특정 명령어가 없어 웹 검색 시도: 대한민2025선거일 알려줘.
+2025-04-08 01:35:23,876 - INFO - 검색 및 요약 시도: 대한민2025선거일 알려줘.
+2025-04-08 01:35:23,876 - INFO - 구글 검색 시작...
+2025-04-08 01:35:26,833 - INFO - URL 처리 중: https://namu.wiki/w/2025%EB%85%84%20%EC%9E%AC%EB%B3%B4%EA%B6%90%EC%84%A0%EA%B1%B0
+2025-04-08 01:35:28,488 - INFO - URL https://namu.wiki/w/2025%EB%85%84%20%EC%9E%AC%EB%B3%B4%EA%B6%90%EC%84%A0%EA%B1%B0 처리 완료 (내용 길이: 2808)
+2025-04-08 01:35:28,488 - INFO - URL 처리 중: https://ko.wikipedia.org/wiki/2025%EB%85%84_%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EC%9E%AC%EB%B3%B4%EA%B6%90%EC%84%A0%EA%B1%B0
+2025-04-08 01:35:29,104 - INFO - URL https://ko.wikipedia.org/wiki/2025%EB%85%84_%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD_%EC%9E%AC%EB%B3%B4%EA%B6%90%EC%84%A0%EA%B1%B0 처리 완료 (내용 길이: 9819)
+2025-04-08 01:35:29,104 - INFO - 검색 결과 요약 시도 (컨텍스트 길이: 3007)...
+2025-04-08 01:35:30,236 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 01:35:30,244 - INFO - 검색 결과 요약 성공
+2025-04-08 01:35:30,244 - INFO - 작업 완료
+2025-04-08 09:40:45,187 - INFO - 코더 에이전트가 성공적으로 초기화되었습니다.
+2025-04-08 09:41:20,114 - INFO - 작업 시작: p눈내리는 파티클 g포함해서 코드 작성하고 실행해줘.
+2025-04-08 09:41:20,116 - INFO - 핸들러 _handle_code_generation 선택됨
+2025-04-08 09:41:20,116 - INFO - LLM 코드 생성 요청 (go): p눈내리는 파티클 g포함해서 코드 작성하고 실행해줘.
+2025-04-08 09:41:21,486 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 09:41:21,495 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_094121.go
+2025-04-08 09:41:21,495 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_094121.go using Popen
+2025-04-08 09:41:21,499 - INFO - 파일 분석 완료 - 타입: application/go, 언어: go
+2025-04-08 09:41:21,506 - ERROR - Executable not found: go. Error: [Errno 2] No such file or directory: 'go'
+2025-04-08 09:41:21,507 - ERROR - Command not found during execution: go
+2025-04-08 09:41:21,507 - INFO - 작업 완료
+2025-04-08 09:41:50,165 - INFO - 작업 시작: python을 이용해 눈이오는 파티gui를 포함해 코드로 작성하고 실행해줘.
+2025-04-08 09:41:50,166 - INFO - 핸들러 _handle_code_generation 선택됨
+2025-04-08 09:41:50,166 - INFO - LLM 코드 생성 요청 (python): python을 이용해 눈이오는 파티gui를 포함해 코드로 작성하고 실행해줘.
+2025-04-08 09:41:51,734 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-08 09:41:51,737 - INFO - 생성된 코드 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_094151.py
+2025-04-08 09:41:51,737 - INFO - 파일 실행 시도: /Users/jangyoung/Documents/Github/SPTTC/vive_coding/Agent/output/generated_code_20250408_094151.py using Popen
+2025-04-08 09:41:51,737 - INFO - 파일 분석 완료 - 타입: text/x-python, 언어: python
+2025-04-08 09:41:51,776 - WARNING - Module not found: _tkinter
+2025-04-08 09:41:51,776 - INFO - 작업 완료
