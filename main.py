@@ -18,6 +18,8 @@ from utils import is_fixable_code_error, format_execution_result # Import helper
 from web_handler import WebHandler # Import WebHandler
 from task_planner import TaskPlanner # Import TaskPlanner
 from result_formatter import ResultFormatter # Import ResultFormatter
+from model_manager import ModelManager # Import ModelManager
+import constants # Import constants
 
 # 로깅 설정
 logging.basicConfig(
@@ -30,23 +32,14 @@ logging.basicConfig(
 )
 
 class AgentAI:
-    # 작업 타입 상수 정의
-    TASK_SEARCH = "search"
-    TASK_CODE_GENERATION = "code_generation"
-    TASK_FILE_EXECUTION = "file_execution"
-    TASK_CODE_BLOCK_EXECUTION = "code_block_execution"
-    TASK_COMPILATION = "compilation"
-    TASK_COMPILED_RUN = "compiled_run"
-    TASK_DIRECTORY_EXPLORATION = "directory_exploration"
-    TASK_FILE_MANAGEMENT = "file_management"
-    
-    def __init__(self, name: str, description: str, memory_limit: int = 10):
+    def __init__(self, name: str, description: str, memory_limit: int = 10, model_config: Dict[str, str] | None = None):
         """초기화 함수
         
         Args:
             name (str): 에이전트의 이름
             description (str): 에이전트의 설명
             memory_limit (int, optional): 메모리에 저장할 최대 대화 수. Defaults to 10.
+            model_config (Dict[str, str] | None, optional): ModelManager 설정을 위한 모델 구성. Defaults to None.
         """
         load_dotenv()  # .env 파일에서 환경 변수 로드
         
@@ -59,14 +52,14 @@ class AgentAI:
         if not os.getenv("OPENAI_API_KEY"):
             raise ValueError("OPENAI_API_KEY가 설정되지 않았습니다.")
         
-        # OpenAI 클라이언트 초기화
-        self.client = OpenAI()
+        # LLM 호출 및 클라이언트 관리를 ModelManager에게 위임
+        self.model_manager = ModelManager(model_config) # ModelManager 초기화
         logging.info(f"{self.name} 에이전트가 성공적으로 초기화되었습니다.")
         
-        # 에이전트 및 도구 초기화
-        self.code_generator = CodeGeneratorAgent(client=self.client) # CodeGeneratorAgent 인스턴스 생성
-        self.web_handler = WebHandler(client=self.client)
-        self.task_planner = TaskPlanner(client=self.client)
+        # 에이전트 및 도구 초기화 시 ModelManager 전달
+        self.code_generator = CodeGeneratorAgent(model_manager=self.model_manager)
+        self.web_handler = WebHandler(model_manager=self.model_manager)
+        self.task_planner = TaskPlanner(model_manager=self.model_manager)
         self.result_formatter = ResultFormatter()
         
         # 시스템 메시지 설정
@@ -239,7 +232,7 @@ class AgentAI:
                 
                 if current_step_index < len(plan) - 1:
                     next_step = plan[current_step_index + 1]
-                    if next_step.get("task_type") != self.TASK_FILE_EXECUTION:
+                    if next_step.get("task_type") != constants.TASK_FILE_EXECUTION:
                         logging.info("Auto-adding file execution step for generated code")
                         # We can't modify the plan directly, but we'll set a flag to handle the execution
                         context["execute_after_generation"] = True
@@ -616,9 +609,9 @@ class AgentAI:
 
             try:
                 # 작업 유형에 따라 적절한 실행 함수 호출
-                if task_type == self.TASK_SEARCH:
+                if task_type == constants.TASK_SEARCH:
                     step_result_data = self._execute_search_step(parameters, context)
-                elif task_type == self.TASK_CODE_GENERATION:
+                elif task_type == constants.TASK_CODE_GENERATION:
                     step_result_data = self._execute_code_generation_step(parameters, context)
                     
                     # Check if we need to execute the generated code even if not in the plan
@@ -627,7 +620,7 @@ class AgentAI:
                         exec_result = self._execute_file_execution_step({}, context)
                         # Add this result to the step results as a synthetic step
                         auto_exec_step = {
-                            "task_type": self.TASK_FILE_EXECUTION, 
+                            "task_type": constants.TASK_FILE_EXECUTION,
                             "description": "생성된 코드 자동 실행",
                             "result": exec_result
                         }
@@ -635,11 +628,11 @@ class AgentAI:
                         # Remove the flag to avoid duplicate execution
                         context.pop("execute_after_generation", None)
 
-                elif task_type == self.TASK_FILE_EXECUTION:
+                elif task_type == constants.TASK_FILE_EXECUTION:
                     step_result_data = self._execute_file_execution_step(parameters, context)
-                elif task_type == self.TASK_CODE_BLOCK_EXECUTION:
+                elif task_type == constants.TASK_CODE_BLOCK_EXECUTION:
                     step_result_data = self._execute_code_block_execution_step(parameters, context)
-                elif task_type == self.TASK_COMPILATION:
+                elif task_type == constants.TASK_COMPILATION:
                     step_result_data = self._execute_compilation_step(parameters, context)
                     # If compilation fails, stop the plan execution for compile/run sequences
                     if not step_result_data.get("success", False):
@@ -650,11 +643,11 @@ class AgentAI:
                             "result": step_result_data
                          })
                          break # Stop processing further steps
-                elif task_type == self.TASK_COMPILED_RUN:
+                elif task_type == constants.TASK_COMPILED_RUN:
                     step_result_data = self._execute_compiled_run_step(parameters, context)
-                elif task_type == self.TASK_DIRECTORY_EXPLORATION:
+                elif task_type == constants.TASK_DIRECTORY_EXPLORATION:
                     step_result_data = self._execute_directory_exploration_step(parameters, context)
-                elif task_type == self.TASK_FILE_MANAGEMENT:
+                elif task_type == constants.TASK_FILE_MANAGEMENT:
                     step_result_data = self._execute_file_management_step(parameters, context)
                 else:
                     step_result_data = {"success": False, "result": f"알 수 없는 작업 유형: {task_type}"}
@@ -688,7 +681,7 @@ class AgentAI:
                 logging.info("Detected pending execution at the end of plan, performing execution")
                 exec_result = self._execute_file_execution_step({}, context)
                 step_results.append({
-                    "task_type": self.TASK_FILE_EXECUTION, 
+                    "task_type": constants.TASK_FILE_EXECUTION,
                     "description": "추가 파일 실행 단계",
                     "result": exec_result
                 })

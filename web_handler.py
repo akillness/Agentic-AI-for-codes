@@ -2,20 +2,20 @@ from typing import List, Dict, Any
 import logging
 import requests
 from bs4 import BeautifulSoup
-from openai import OpenAI
+from model_manager import ModelManager
 from googlesearch import search # Import specific function
 
 class WebHandler:
-    def __init__(self, client: OpenAI, max_search_results: int = 2, context_token_limit: int = 4000, summary_max_tokens: int = 200):
+    def __init__(self, model_manager: ModelManager, max_search_results: int = 2, context_token_limit: int = 4000, summary_max_tokens: int = 200):
         """Initializes the WebHandler.
 
         Args:
-            client (OpenAI): The OpenAI client instance.
+            model_manager (ModelManager): The ModelManager instance.
             max_search_results (int): Maximum number of search result pages to process.
             context_token_limit (int): Token limit for context sent to LLM for summarization.
             summary_max_tokens (int): Max tokens for the generated summary.
         """
-        self.client = client
+        self.model_manager = model_manager
         self.max_search_results = max_search_results
         self.context_token_limit = context_token_limit
         self.summary_max_tokens = summary_max_tokens
@@ -120,21 +120,24 @@ class WebHandler:
         )
 
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo", # Consider gpt-4o-mini if available and affordable
+            llm_result = self.model_manager.call_llm(
+                task_type='summarization',
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"Original Question: {query}\n\nContext:\n{context_for_llm}"}
                 ],
-                temperature=0.2, # Lower temperature for factual summary
+                temperature=0.2,
                 max_tokens=self.summary_max_tokens,
-                n=1,
-                stop=None,
             )
-            summary = response.choices[0].message.content.strip()
+
+            if not llm_result["success"]:
+                # Log error, handled in call_llm
+                summary = None
+            else:
+                summary = llm_result["content"]
 
             if not summary:
-                logging.warning("LLM summary result is empty.")
+                logging.warning("LLM summary result is empty or failed.")
                 # Fallback: provide first part of the first result
                 fallback_message = "검색 결과를 요약하는 데 실패했습니다." if language_hint == 'ko' else "Failed to summarize search results."
                 return f"{fallback_message} 첫 번째 결과 일부: \n{text_content[0][:300]}..."
@@ -143,7 +146,9 @@ class WebHandler:
             return summary
 
         except Exception as e:
-            logging.error(f"LLM summarization API call failed: {e}", exc_info=True)
+            # This catch might be less likely now as call_llm handles API errors,
+            # but keep it for unexpected issues during message preparation etc.
+            logging.error(f"Unexpected error during summarization preparation or fallback: {e}", exc_info=True)
             # Fallback: provide first part of the first result
             fallback_message = "텍스트 요약 중 오류가 발생했습니다." if language_hint == 'ko' else "An error occurred during text summarization."
             return f"{fallback_message} 첫 번째 결과 일부: \n{text_content[0][:300]}..."

@@ -4,7 +4,7 @@ import re
 import os
 import logging
 from datetime import datetime
-from openai import OpenAI
+from model_manager import ModelManager
 from file_manager import FileManager
 
 # tool 데코레이터는 ToolCallingAgent에서 직접 사용하지 않으므로 주석 처리 또는 삭제 가능
@@ -17,13 +17,13 @@ from file_manager import FileManager
 #     return wrapper
 
 class CodeGeneratorAgent:
-    def __init__(self, client: OpenAI):
+    def __init__(self, model_manager: ModelManager):
         """초기화 함수
         
         Args:
-            client (OpenAI): OpenAI API 클라이언트
+            model_manager (ModelManager): ModelManager 인스턴스
         """
-        self.client = client
+        self.model_manager = model_manager
         self.output_dir = os.path.join(os.getcwd(), 'output')
         os.makedirs(self.output_dir, exist_ok=True)
         
@@ -317,15 +317,17 @@ Only generate educational, useful, and safe code that demonstrates the requested
             llm_response_text = "" # Store full response
 
             try:
-                response = self.client.chat.completions.create(
-                    model="gpt-4o-mini", # Or your preferred model
+                llm_result = self.model_manager.call_llm(
+                    task_type='correction' if is_correction_request else 'code_gen',
                     messages=messages,
-                    temperature=0.1, # Low temp for deterministic code
-                    max_tokens=1500, # Adjust as needed
-                    n=1,
-                    stop=None,
+                    temperature=0.1,
+                    max_tokens=1500,
                 )
-                llm_response_text = response.choices[0].message.content.strip()
+
+                if not llm_result["success"]:
+                    raise Exception(f"LLM API call failed: {llm_result['error']}")
+
+                llm_response_text = llm_result["content"]
                 
                 # 코드 블록 추출 (정규 표현식 사용, 여러 블록 가능성 고려)
                 code_blocks = re.findall(r"```(?:[\w-]+)?\n(.*?)```", llm_response_text, re.DOTALL)
@@ -393,10 +395,11 @@ Only generate educational, useful, and safe code that demonstrates the requested
                     if required_packages:
                         logging.info(f"Detected required packages: {required_packages}")
 
-            except Exception as e:
-                logging.error(f"LLM API 호출 중 오류 발생: {e}", exc_info=True)
-                result_message = f"LLM API 호출 중 오류가 발생했습니다: {e}"
-                status = "failed_api"
+            except Exception as e: # Catch failure from call_llm or other exceptions
+                # Error logging is now handled inside call_llm, but we catch to set status
+                logging.error(f"Error during code generation/correction: {e}", exc_info=True)
+                result_message = f"코드 생성/수정 중 오류 발생: {e}"
+                status = "failed_api" # Or determine based on caught exception type if needed
 
             # --- 결과 처리 및 파일 저장 ---
             if status == "success":

@@ -2,22 +2,13 @@ from typing import List, Dict, Any
 import logging
 import json
 import re  # Move import to the top
-from openai import OpenAI
+from model_manager import ModelManager
+import constants # Import constants
 
 class TaskPlanner:
-    # Constants for task types (shared with AgentAI)
-    TASK_SEARCH = "search"
-    TASK_CODE_GENERATION = "code_generation"
-    TASK_FILE_EXECUTION = "file_execution"
-    TASK_CODE_BLOCK_EXECUTION = "code_block_execution"
-    TASK_COMPILATION = "compilation"
-    TASK_COMPILED_RUN = "compiled_run"
-    TASK_DIRECTORY_EXPLORATION = "directory_exploration"
-    TASK_FILE_MANAGEMENT = "file_management"
-
-    def __init__(self, client: OpenAI):
+    def __init__(self, model_manager: ModelManager):
         """Initializes the TaskPlanner."""
-        self.client = client
+        self.model_manager = model_manager
         logging.info("TaskPlanner initialized.")
 
     def _detect_explicit_patterns(self, task: str) -> List[Dict[str, Any]] | None:
@@ -51,12 +42,12 @@ class TaskPlanner:
             logging.info(f"Explicit pattern detected: Compile + Run ({file_path})")
             return [
                 {
-                    "task_type": self.TASK_COMPILATION,
+                    "task_type": constants.TASK_COMPILATION,
                     "description": f"'{file_path}' 파일 컴파일",
                     "parameters": {"file_path": file_path}
                 },
                 {
-                    "task_type": self.TASK_COMPILED_RUN,
+                    "task_type": constants.TASK_COMPILED_RUN,
                     "description": "컴파일된 파일 실행",
                     "parameters": {"file_path": file_path} # Pass original path
                 }
@@ -67,17 +58,17 @@ class TaskPlanner:
             logging.info("Explicit pattern detected: Search + Code Gen + Execute")
             return [
                 {
-                    "task_type": self.TASK_SEARCH,
+                    "task_type": constants.TASK_SEARCH,
                     "description": f"'{task}' 관련 정보 웹 검색",
                     "parameters": {"query": task}
                 },
                 {
-                    "task_type": self.TASK_CODE_GENERATION,
+                    "task_type": constants.TASK_CODE_GENERATION,
                     "description": f"검색 결과를 활용하여 '{task}' 요청 코드 생성",
                     "parameters": {"task": task, "use_search_context": True}
                 },
                 {
-                    "task_type": self.TASK_FILE_EXECUTION,
+                    "task_type": constants.TASK_FILE_EXECUTION,
                     "description": "생성된 코드 파일 실행",
                     "parameters": {} # File path comes from code_generation context
                 }
@@ -88,12 +79,12 @@ class TaskPlanner:
             logging.info("Explicit pattern detected: Search + Code Gen")
             return [
                 {
-                    "task_type": self.TASK_SEARCH,
+                    "task_type": constants.TASK_SEARCH,
                     "description": f"'{task}' 관련 정보 웹 검색",
                     "parameters": {"query": task}
                 },
                 {
-                    "task_type": self.TASK_CODE_GENERATION,
+                    "task_type": constants.TASK_CODE_GENERATION,
                     "description": f"검색 결과를 활용하여 '{task}' 요청 코드 생성",
                     "parameters": {"task": task, "use_search_context": True}
                 }
@@ -104,12 +95,12 @@ class TaskPlanner:
             logging.info("Explicit pattern detected: Code Gen + Execute")
             return [
                 {
-                    "task_type": self.TASK_CODE_GENERATION,
+                    "task_type": constants.TASK_CODE_GENERATION,
                     "description": f"'{task}' 요청 코드 생성",
                     "parameters": {"task": task, "use_search_context": False}
                 },
                 {
-                    "task_type": self.TASK_FILE_EXECUTION,
+                    "task_type": constants.TASK_FILE_EXECUTION,
                     "description": "생성된 코드 파일 실행",
                     "parameters": {} # File path comes from code_generation context
                 }
@@ -123,7 +114,7 @@ class TaskPlanner:
             logging.info(f"Explicit pattern detected: Directory Exploration ({dir_path})")
             return [
                  {
-                     "task_type": self.TASK_DIRECTORY_EXPLORATION,
+                     "task_type": constants.TASK_DIRECTORY_EXPLORATION,
                      "description": f"'{dir_path}' 디렉토리 탐색",
                      "parameters": {"dir_path": dir_path}
                  }
@@ -148,7 +139,7 @@ class TaskPlanner:
                 logging.info(f"Explicit pattern detected: File Management ({action} {path})")
                 return [
                      {
-                         "task_type": self.TASK_FILE_MANAGEMENT,
+                         "task_type": constants.TASK_FILE_MANAGEMENT,
                          "description": f"파일 관리: {path} {action}",
                          "parameters": {"action": action, "path": path}
                      }
@@ -165,14 +156,14 @@ class TaskPlanner:
 사용자의 요청을 분석하여 수행해야 할 작업 계획을 JSON 배열 형식으로 생성해주세요.
 
 사용 가능한 작업 유형:
-- {self.TASK_SEARCH}: 웹 검색 (파라미터: query)
-- {self.TASK_CODE_GENERATION}: 코드 생성 (파라미터: task, use_search_context)
-- {self.TASK_FILE_EXECUTION}: 생성된 코드 파일 실행 (파라미터: file_path - 이전 단계에서 전달됨, 또는 명시적 지정)
-- {self.TASK_CODE_BLOCK_EXECUTION}: 코드 블록 직접 실행 (파라미터: code, language)
-- {self.TASK_COMPILATION}: 코드 컴파일 (파라미터: file_path)
-- {self.TASK_COMPILED_RUN}: 컴파일된 파일 실행 (파라미터: file_path - 원본 소스 파일 경로)
-- {self.TASK_DIRECTORY_EXPLORATION}: 디렉토리 내용 확인 (파라미터: dir_path)
-- {self.TASK_FILE_MANAGEMENT}: 파일 생성/삭제/이동/읽기/쓰기 (파라미터: action[create|delete|move|read|write], path, [new_path], [content])
+- {constants.TASK_SEARCH}: 웹 검색 (파라미터: query)
+- {constants.TASK_CODE_GENERATION}: 코드 생성 (파라미터: task, use_search_context)
+- {constants.TASK_FILE_EXECUTION}: 생성된 코드 파일 실행 (파라미터: file_path - 이전 단계에서 전달됨, 또는 명시적 지정)
+- {constants.TASK_CODE_BLOCK_EXECUTION}: 코드 블록 직접 실행 (파라미터: code, language)
+- {constants.TASK_COMPILATION}: 코드 컴파일 (파라미터: file_path)
+- {constants.TASK_COMPILED_RUN}: 컴파일된 파일 실행 (파라미터: file_path - 원본 소스 파일 경로)
+- {constants.TASK_DIRECTORY_EXPLORATION}: 디렉토리 내용 확인 (파라미터: dir_path)
+- {constants.TASK_FILE_MANAGEMENT}: 파일 생성/삭제/이동/읽기/쓰기 (파라미터: action[create|delete|move|read|write], path, [new_path], [content])
 
 규칙:
 1. 응답은 반드시 JSON 배열이어야 합니다 (예: `[{{"task_type": ...}}, ...]`). 다른 텍스트는 포함하지 마세요.
@@ -191,17 +182,20 @@ JSON 계획:
 """
 
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o-mini", # Use a capable model for planning
+            llm_result = self.model_manager.call_llm(
+                task_type='planning',
                 messages=[
                     {"role": "system", "content": "You are a planning assistant. Generate a JSON array representing the steps needed to fulfill the user request, following the provided instructions and schema. Respond ONLY with the JSON array."},
                     {"role": "user", "content": plan_prompt}
                 ],
                 temperature=0.1,
-                response_format={"type": "json_object"} # Request JSON output
+                response_format={"type": "json_object"}
             )
 
-            raw_plan_json = response.choices[0].message.content.strip()
+            if not llm_result["success"]:
+                raise Exception(f"LLM planning call failed: {llm_result['error']}")
+
+            raw_plan_json = llm_result["content"]
             logging.info(f"Raw plan JSON from LLM: {raw_plan_json}")
 
             # Attempt to parse the JSON
@@ -212,9 +206,9 @@ JSON 계획:
             logging.error(f"LLM-based planning failed: {e}", exc_info=True)
             # Fallback plan: Simple code generation or search based on keywords
             if any(kw in task.lower() for kw in self._get_keywords("code_gen_kws")):
-                return [{"task_type": self.TASK_CODE_GENERATION, "description": "코드 생성 시도", "parameters": {"task": task, "use_search_context": False}}]
+                return [{ "task_type": constants.TASK_CODE_GENERATION, "description": "코드 생성 시도", "parameters": {"task": task, "use_search_context": False}}]
             else:
-                 return [{"task_type": self.TASK_SEARCH, "description": "웹 검색 시도", "parameters": {"query": task}}]
+                return [{ "task_type": constants.TASK_SEARCH, "description": "웹 검색 시도", "parameters": {"query": task}}]
 
     def _parse_and_validate_plan(self, plan_json: str, original_task: str) -> List[Dict[str, Any]]:
         """Parses the JSON plan and validates its structure, providing fallbacks."""
@@ -275,9 +269,9 @@ JSON 계획:
             logging.error(f"Failed to parse or validate LLM plan JSON: {e}. Raw JSON: \n{plan_json}")
             # Fallback plan if parsing/validation fails
             if any(kw in original_task.lower() for kw in self._get_keywords("code_gen_kws")):
-                return [{"task_type": self.TASK_CODE_GENERATION, "description": "LLM 계획 실패 후 코드 생성 시도", "parameters": {"task": original_task, "use_search_context": False}}]
+                return [{ "task_type": constants.TASK_CODE_GENERATION, "description": "LLM 계획 실패 후 코드 생성 시도", "parameters": {"task": original_task, "use_search_context": False}}]
             else:
-                return [{"task_type": self.TASK_SEARCH, "description": "LLM 계획 실패 후 웹 검색 시도", "parameters": {"query": original_task}}]
+                return [{ "task_type": constants.TASK_SEARCH, "description": "LLM 계획 실패 후 웹 검색 시도", "parameters": {"query": original_task}}]
 
     def _get_keywords(self, kw_type: str) -> List[str]:
          """Helper to get keyword lists, prevents repeating them."""
